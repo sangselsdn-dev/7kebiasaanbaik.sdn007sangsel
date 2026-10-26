@@ -1,8 +1,11 @@
 name: Jaga Supabase tetap aktif
 on:
+  push:
+    paths:
+      - ".github/workflows/keepalive.yml"   # menyimpan berkas ini otomatis menjalankan uji coba
   schedule:
-    - cron: "0 2 * * *"   # tiap hari pukul 10.00 WITA
-  workflow_dispatch:       # bisa dijalankan manual dari tab Actions
+    - cron: "0 2 * * *"                     # tiap hari pukul 10.00 WITA
+  workflow_dispatch:                        # tombol "Run workflow" (jika tersedia)
 jobs:
   ping:
     runs-on: ubuntu-latest
