@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#16834a">
+<meta name="theme-color" content="#C8202A">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <title>Jurnal Anak Hebat</title>
 <style>
-:root{--g:#16834a;--gd:#10683a;--gs:#eaf7ef;--o:#f28a35;--ink:#26352d;--mu:#66736b;--ln:#dfe8e2;--bg:#f3f8f4;--red:#a62d2d}
+:root{--g:#16834a;--gd:#10683a;--gs:#eaf7ef;--o:#f28a35;--ink:#26352d;--mu:#66736b;--ln:#dfe8e2;--bg:#F4F8FC;--red:#a62d2d;--br:#C8202A;--kn:#FCE01C;--bl:#E3EEF8;--bt:#1F4E8C;--am:#F5A524}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,Arial,sans-serif;padding-bottom:88px}
-header{background:linear-gradient(135deg,#16834a,#2da866);color:#fff;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 18px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+header{background:linear-gradient(135deg,#B81D26,#E12B30);border-bottom:5px solid #FCE01C;color:#fff;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 18px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 header b{font-size:1.25rem}header small{display:block;opacity:.92}
-#sw{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:99px;padding:6px 12px;min-height:40px;font-weight:700}
+#sw{flex:none;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:99px;padding:6px 12px;min-height:40px;font-weight:700}
 main{max-width:760px;margin:0 auto;padding:14px 12px}
 .card{background:#fff;border:1px solid var(--ln);border-radius:16px;padding:16px;margin-bottom:14px}
-h2{margin:0 0 4px;font-size:1.15rem;color:var(--gd)}
+h2{margin:0 0 4px;font-size:1.15rem;color:var(--bt)}
 .sub{color:var(--mu);font-size:.9rem;margin:0 0 12px}
 .lbl{font-weight:700;margin:12px 0 6px}
 input,select,textarea{width:100%;min-height:46px;padding:10px 12px;border:1px solid #cbd9cf;border-radius:10px;font:inherit;color:var(--ink);background:#fff;margin-bottom:8px}
 button{font:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid rgba(242,138,53,.5);outline-offset:2px}
 .btn{display:inline-block;min-height:46px;padding:10px 16px;border:0;border-radius:11px;font-weight:700;margin:4px 6px 4px 0;text-decoration:none;text-align:center}
-.pr{background:var(--g);color:#fff;width:100%;margin-top:10px}.pr:disabled{background:#a9c7b6;cursor:not-allowed}
-.lt{background:var(--gs);color:var(--gd);border:1px solid #b9d9c4}
+.pr{background:var(--br);color:#fff;width:100%;margin-top:10px}.pr:disabled{background:#a9c7b6;cursor:not-allowed}
+.lt{background:var(--bl);color:var(--bt);border:1px solid #b7cde4}
 .dg{background:#fff0f0;color:var(--red);border:1px solid #f0cccc;min-height:38px;padding:6px 12px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.chip{min-height:40px;padding:6px 14px;border-radius:99px;border:1px solid #b9d9c4;background:#fff;color:var(--gd);font-weight:700}
-.chip.on{background:var(--g);color:#fff;border-color:var(--g)}
+.chip{min-height:40px;padding:6px 14px;border-radius:99px;border:1px solid #b7cde4;background:#fff;color:var(--bt);font-weight:700}
+.chip.on{background:var(--br);color:#fff;border-color:var(--br)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .stu{text-align:left;padding:12px;border-radius:13px;border:2px solid var(--ln);background:#fff;color:var(--ink)}
 .stu small{display:block;color:var(--mu)}.stu.done{border-color:#7fcf9e;background:var(--gs)}
@@ -34,28 +34,29 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .hn{font-weight:700;flex:1 1 180px}.ic{font-size:1.5rem;margin-right:8px;vertical-align:middle}
 .yn{display:flex;gap:8px}
 .yb{min-width:88px;min-height:46px;border-radius:11px;border:2px solid var(--ln);background:#fff;font-weight:700;color:var(--mu)}
-.yb.y.on{background:var(--g);border-color:var(--g);color:#fff}.yb.n.on{background:var(--red);border-color:var(--red);color:#fff}
+.yb.y.on{background:var(--g);border-color:var(--g);color:#fff}.yb.n.on{background:var(--am);border-color:var(--am);color:#3d2400}
 .msg{background:#fff6e9;color:#774514;border-left:4px solid var(--o);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:.93rem}
 .empty{color:var(--mu);text-align:center;padding:18px}
 .row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--ln)}
 .row select{width:auto;margin:0}.row>div:first-child{flex:1 1 150px}.row small{color:var(--mu);display:block}
-.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:.8rem;font-weight:700;background:var(--gs);color:var(--gd)}
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:.8rem;font-weight:700;background:var(--gs);color:var(--bt)}
 .badge.no{background:#ffe8e6;color:#ad342c}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.stat{background:var(--gs);border-radius:12px;padding:10px;text-align:center}.stat b{display:block;font-size:1.4rem;color:var(--gd)}.stat small{color:var(--mu)}
+.stat{background:var(--gs);border-radius:12px;padding:10px;text-align:center}.stat b{display:block;font-size:1.4rem;color:var(--bt)}.stat small{color:var(--mu)}
 .bar{height:12px;background:#e5eee8;border-radius:99px;overflow:hidden;margin-top:4px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#16834a,#5ac77e)}
-.code{font:700 1.3rem monospace;letter-spacing:2px;background:var(--gs);padding:8px 12px;border-radius:10px;display:inline-block}
+.code{font:700 1.3rem monospace;letter-spacing:2px;background:var(--bl);color:var(--bt);padding:8px 12px;border-radius:10px;display:inline-block}
 #tabs{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom,0px)}
 #tabs[hidden]{display:none}
 #tabs button{border:0;background:none;padding:8px 2px;font-size:.72rem;font-weight:700;color:var(--mu);min-height:56px}
-#tabs button span{display:block;font-size:1.3rem;line-height:1.2}#tabs button.on{color:var(--g)}
+#tabs button span{display:block;font-size:1.3rem;line-height:1.2}#tabs button.on{color:var(--br)}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#26352d;color:#fff;padding:10px 16px;border-radius:99px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
 #toast.show{opacity:1}
+.br{display:flex;align-items:center;gap:10px}.br img{border-radius:50%;background:#fff}
 @media print{header,#tabs,#toast,.chips,.btn,.dg{display:none!important}body{background:#fff;padding:0}.card{border:0;break-inside:avoid}}
 @media(prefers-reduced-motion:reduce){#toast{transition:none}}
 </style></head>
 <body>
-<header><div><b>🌱 Jurnal Anak Hebat</b><small>SDN 007 Sangatta Selatan</small></div><button id="sw" hidden>Ganti peran</button></header>
+<header><div class="br"><img src="logo.png" alt="Logo SDN 007 Sangatta Selatan" width="48" height="48"><div><b>Jurnal Anak Hebat</b><small>SDN 007 Sangatta Selatan</small></div></div><button id="sw" hidden>Ganti peran</button></header>
 <main id="app"></main>
 <nav id="tabs" aria-label="Menu guru" hidden></nav>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -65,6 +66,7 @@ const $=s=>document.querySelector(s);
 const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));v===null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
 const H=[['🌅','Bangun Pagi'],['🙏','Beribadah'],['🏃','Berolahraga'],['🥗','Makan Sehat dan Bergizi'],['📚','Gemar Belajar'],['🤝','Bermasyarakat'],['🌙','Tidur Cepat']];
 const BY=['siswa','ortu','guru'],BYL=['Siswa','Orang tua','Guru'],AB=['hadir','sakit','izin','alpa'],cap=t=>t[0].toUpperCase()+t.slice(1);
+const HC=['#E53935','#FB8C00','#F9C80E','#43A047','#1E88E5','#5E35B1','#8E24AA'],NILAI=['Martabat','Amanah','Nasionalis','Dedikasi','Iman','Ramah','Indah'],nilaiHari=()=>NILAI[Math.floor(Date.now()/864e5)%7];
 const SALAT=['Subuh','Zuhur','Asar','Magrib','Isya'],UMUMI=['Berdoa pagi','Berdoa sebelum tidur','Ibadah rutin sesuai agama'];
 const pad=n=>String(n).padStart(2,'0'),ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),today=()=>ds(new Date());
 const addDays=(s,n)=>{const[y,m,d]=s.split('-').map(Number);return ds(new Date(y,m-1,d+n))};
@@ -100,13 +102,13 @@ function formJ(nama,sub,nBy,onSave,onBack,ex){
  if(!V.draft){V.draft=Array(7).fill(null);V.draft[1]=0;V.dr=Array(V.jn==='muslim'?5:3).fill(0)}
  const n=V.draft.filter(x=>x!==null).length;
  return h('div',{},h('button',{class:'btn lt',onclick:onBack},'← Kembali'),h('div',{class:'card'},h('h2',{},nama),h('p',{class:'sub'},sub),
-  H.map((x,i)=>h('div',{class:'hab'},h('div',{class:'hn'},h('span',{class:'ic'},x[0]),(i+1)+'. '+x[1]),
+  H.map((x,i)=>h('div',{class:'hab',style:'border-left:6px solid '+HC[i]+';padding-left:10px'},h('div',{class:'hn'},h('span',{class:'ic'},x[0]),(i+1)+'. '+x[1]),
    i===1?h('div',{style:'width:100%'},h('div',{class:'sub'},V.jn==='muslim'?'Centang salat yang sudah dilakukan':'Centang yang sudah dilakukan'),h('div',{class:'chips'},(V.jn==='muslim'?SALAT:UMUMI).map((t,j)=>h('button',{class:'chip'+(V.dr[j]?' on':''),'aria-pressed':String(!!V.dr[j]),onclick:()=>{V.dr[j]=V.dr[j]?0:1;V.draft[1]=V.dr.every(Boolean)?1:0;render()}},(V.dr[j]?'✅ ':'')+t)))):h('div',{class:'yn'},[['Sudah',1],['Belum',0]].map(([t,v])=>h('button',{class:'yb '+(v?'y':'n')+(V.draft[i]===v?' on':''),'aria-pressed':String(V.draft[i]===v),onclick:()=>{V.draft[i]=v;render()}},t))))),
   h('p',{class:'sub'},n+' dari 7 terisi'),
   nBy>1?[h('div',{class:'lbl'},'Diisi oleh'),h('div',{class:'chips'},BYL.slice(0,nBy).map((t,i)=>h('button',{class:'chip'+(V.by===i?' on':''),onclick:()=>{V.by=i;render()}},t)))]:'',
   h('button',{class:'btn pr',disabled:n<7,onclick:onSave},n<7?'Isi semua kebiasaan dulu':'Simpan jurnal'),ex||''))}
 
-function vHome(){return h('div',{},h('div',{class:'card'},h('h2',{},'Selamat datang 👋'),h('p',{class:'sub'},'Pilih peranmu.'),
+function vHome(){return h('div',{},h('div',{class:'card'},h('img',{src:'maskot.jpg',alt:'Dua siswa SDN 007 mengacungkan jempol',style:'width:100%;border-radius:14px;margin-bottom:12px'}),h('h2',{},'Selamat datang 👋'),h('p',{class:'sub'},'Pilih peranmu.'),
  h('button',{class:'btn pr',onclick:()=>setMode('anak')},'👧 Saya siswa / orang tua'),
  h('button',{class:'btn pr lt',style:'border:1px solid #b9d9c4',onclick:()=>setMode('guru')},'👩‍🏫 Saya guru')))}
 
@@ -119,7 +121,7 @@ function vAnak(){
    try{await rpc('simpan_jurnal',{p_kode:K,p_siswa:s.id,p_h:hh,p_oleh:o,p_rinci:rin});toast('Tersimpan ✅')}
    catch(e){if(e instanceof TypeError){Q.push({k:K,s:s.id,h:hh,o,r:rin});LS('jah2q',Q);toast('Tersimpan di HP, dikirim saat online')}else return toast(e.message)}
    s.sudah=true;LS('jah2c',CK);V.sel=null;V.draft=null;render()},()=>{V.sel=null;V.draft=null;render()},h('button',{class:'btn lt',onclick:()=>aktifkanPush(0,s.id)},'🔔 Ingatkan lewat HP ini tiap sore'))}
- return h('div',{},h('div',{class:'card'},h('h2',{},'Kelas '+CK.nama),h('p',{class:'sub'},CK.sekolah+' · Pilih nama untuk mengisi jurnal hari ini'),
+ return h('div',{},h('div',{class:'msg',style:'background:#FFF9D6;border-color:#FCE01C;color:#5a4a00'},'⭐ Nilai MANDIRI hari ini: ',h('b',{},nilaiHari())),h('div',{class:'card'},h('h2',{},'Kelas '+CK.nama),h('p',{class:'sub'},CK.sekolah+' · Pilih nama untuk mengisi jurnal hari ini'),
   CK.siswa.length?h('div',{class:'grid'},CK.siswa.map(s=>h('button',{class:'stu'+(s.sudah?' done':''),onclick:()=>pilih(s.id)},h('b',{},s.nama),h('small',{},s.sudah?'✅ sudah mengisi':'belum mengisi')))):h('p',{class:'empty'},'Belum ada siswa di kelas ini.'),
   h('button',{class:'btn lt',onclick:()=>{K=null;CK=null;LS('jah2k',null);LS('jah2c',null);render()}},'Ganti kelas')))}
 
@@ -179,7 +181,7 @@ function vGRekap(){
   rincian=[['muslim','Muslim · salat 5 waktu','salat',SALAT],['umum','Non-Muslim · ibadah sesuai agama','ibadah',UMUMI]].filter(g=>(grp==='semua'||grp===g[0])&&p.some(s=>s.ibadah===g[0])).map(([g,jd,key,lab])=>{const es=[];days.forEach(d=>p.filter(s=>s.ibadah===g).forEach(s=>{const e=G.j[d+s.id];if(e&&e.rinci&&e.rinci[key])es.push(e.rinci[key])}));
    return h('div',{class:'card'},h('h2',{},jd),h('p',{class:'sub'},p.filter(s=>s.ibadah===g).length+' siswa · persentase butir yang dilakukan'),es.length?lab.map((x,j)=>{const pc=Math.round(es.filter(a=>a[j]===1).length/es.length*100);return h('div',{style:'margin-bottom:10px'},h('div',{},x+' — '+pc+'%'),h('div',{class:'bar'},h('i',{style:'width:'+pc+'%'})))}):h('p',{class:'empty'},'Belum ada jurnal masuk.'))});
  return h('div',{},h('div',{class:'card'},h('h2',{},'Rekap Kelas '+k.nama+' · 7 hari sampai '+fmt(today())),h('p',{class:'sub'},'Persentase jawaban "Sudah" dari jurnal yang masuk.'),kchips(),h('div',{class:'chips'},[['semua','Semua siswa'],['muslim','Muslim'],['umum','Non-Muslim']].map(([g,x])=>h('button',{class:'chip'+((V.grp||'semua')===g?' on':''),onclick:()=>{V.grp=g;render()}},x))),h('button',{class:'btn lt',onclick:()=>unduhRekap(k,p,days)},'⬇️ Unduh Excel'),h('button',{class:'btn lt',onclick:()=>print()},'🖨️ Cetak'),
-  ent.length?H.map((x,i)=>{const pc=Math.round(ent.filter(e=>e.h[i]===1).length/ent.length*100);return h('div',{style:'margin-bottom:10px'},h('div',{},x[0]+' '+x[1]+' — '+pc+'%'),h('div',{class:'bar'},h('i',{style:'width:'+pc+'%'})))}):h('p',{class:'empty'},'Belum ada jurnal masuk.')),
+  ent.length?H.map((x,i)=>{const pc=Math.round(ent.filter(e=>e.h[i]===1).length/ent.length*100);return h('div',{style:'margin-bottom:10px'},h('div',{},x[0]+' '+x[1]+' — '+pc+'%'),h('div',{class:'bar'},h('i',{style:'width:'+pc+'%;background:'+HC[i]})))}):h('p',{class:'empty'},'Belum ada jurnal masuk.')),
   rincian,h('div',{class:'card'},h('h2',{},'Perlu perhatian'),h('p',{class:'sub'},'Tidak mengisi jurnal 3 hari terakhir.'),warn.length?warn.map(s=>h('div',{class:'row'},h('b',{},s.nama))):h('p',{class:'empty'},'Tidak ada. 👍')),
   h('div',{class:'card'},h('h2',{},'Keaktifan per siswa'),p.map(s=>h('div',{class:'row'},h('b',{},s.nama),h('span',{class:'badge'},days.filter(d=>G.j[d+s.id]).length+'/7 hari')))))}
 
