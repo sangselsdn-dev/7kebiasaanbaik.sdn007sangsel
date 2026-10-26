@@ -1,0 +1,18 @@
+name: Jaga Supabase tetap aktif
+on:
+  push:
+    paths:
+      - ".github/workflows/keepalive.yml"
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Panggil database Supabase
+        run: |
+          curl -fsS -X POST "https://vlfnorubqnuecdysdqco.supabase.co/rest/v1/rpc/ambil_kelas" \
+            -H "apikey: sb_publishable_17JU7KoQ_FYDdDggrgRnHw_jN4LFMYK" \
+            -H "Content-Type: application/json" \
+            -d '{"p_kode":"PING"}'
