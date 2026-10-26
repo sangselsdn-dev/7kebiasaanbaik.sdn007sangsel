@@ -87,7 +87,7 @@ const VAPID='BOwJkRtylfKzMPcoo02lJtMhuHpHgSdzI_HeZx0j5o059DTizNFncC4xVMqASqWI-J1
 const b64u=s=>{const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))};
 async function aktifkanPush(guru,sid){
  if(!('serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window))return toast('Browser belum mendukung notifikasi. Di iPhone, tambahkan dulu ke Layar Utama.');
- try{if(await Notification.requestPermission()!=='granted')return toast('Izin notifikasi ditolak');
+ try{if(Notification.permission==='denied')return toast('Notifikasi diblokir. Ketuk ikon gembok di samping alamat, pilih Izin, lalu Notifikasi, dan pilih Izinkan.');if(await Notification.requestPermission()!=='granted')return toast('Izin belum diberikan. Ketuk Izinkan saat diminta.');
   const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID)}),j=sub.toJSON(),b={p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth};
   if(guru)await rpc('daftar_push_guru',b,1);else await rpc('daftar_push',{...b,p_kode:K,p_siswa:sid});
   toast('Pengingat aktif 🔔')}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}}
