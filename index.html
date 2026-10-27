@@ -75,7 +75,7 @@ const fmt=s=>{const[y,m,d]=s.split('-').map(Number);return new Intl.DateTimeForm
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000)}
 function h(tag,p,...kids){const e=document.createElement(tag);for(const k in p||{}){const v=p[k];if(k==='class')e.className=v;else if(k==='value'){}else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v)}kids.flat(9).forEach(c=>e.append(c instanceof Node?c:String(c??'')));if(p&&p.value!=null)e.value=p.value;return e}
 
-const LK={};let TK=LS('jah2t')||{},IB=LS('jah2i')||{},ses=LS('jah2s'),K=LS('jah2k'),CK=LS('jah2c'),Q=LS('jah2q')||[],G=null,DF=null;
+const LK={};let TK=LS('jah2t')||{},IB=LS('jah2i')||{},ses=LS('jah2s'),K=LS('jah2k'),CK=LS('jah2c'),Q=LS('jah2q')||[],G=null,DF=null,AK=LS('jah2a')||[];
 const V={mode:LS('jah2r')||(LS('jah2s')?'guru':LS('jah2k')?'anak':'home'),tab:'hari',kid:null,date:today(),sel:null,draft:null,by:0,st:0,load:false,err:''};
 function setSes(d){ses={access_token:d.access_token,refresh_token:d.refresh_token,exp:Date.now()+d.expires_in*1000};LS('jah2s',ses)}
 async function api(p,o={}){
@@ -102,6 +102,14 @@ async function pilih(id){V.sel=id;V.draft=null;V.st=0;V.fase=TK[id]?'form':'logi
  try{const p=await rpc('profil_saya',{p_token:TK[id]});IB[id]=p.agama||p.ibadah;svT();if(p.wajib_ganti){V.fase='ganti';if(V.sel===id)render();return}
   const set=new Set(p.riwayat);let d=today(),n=0;if(!set.has(d))d=addDays(d,-1);while(set.has(d)){n++;d=addDays(d,-1)}V.st=n;if(V.sel===id)render()}
  catch(e){if(!(e instanceof TypeError)){delete TK[id];svT();V.fase='login';if(V.sel===id)render()}}}
+async function pilihAnak(a){await bukaKelas(a.kode);if(K===a.kode)pilih(a.id)}
+async function masukWa(raw,sandi){const w=rapikanWa(raw);if(!w.ok)return toast('Nomor WA tidak valid. Contoh: 081234567890');if(!sandi)return toast('Isi sandi dulu');
+ try{const r=await rpc('login_wa',{p_wa:w.nomor,p_sandi:sandi});if(!r.ok)return toast(r.pesan);
+  r.anak.forEach(a=>{TK[a.id]=a.token;IB[a.id]=a.agama||a.ibadah});svT();AK=r.anak.map(a=>({id:a.id,nama:a.nama,kelas:a.kelas,kode:a.kode}));LS('jah2a',AK);
+  if(AK.length===1)await pilihAnak(AK[0]);else await bukaKelas(AK[0].kode)}
+ catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}}
+function cardWa(){const wa=h('input',{type:'tel','aria-label':'Nomor WhatsApp orang tua',placeholder:'Nomor WA orang tua, mis. 081234567890',autocomplete:'tel'}),pw=h('input',{type:'password','aria-label':'Sandi',placeholder:'Sandi',autocomplete:'current-password'});pw.onkeydown=e=>{if(e.key==='Enter')masukWa(wa.value,pw.value)};
+ return h('div',{class:'card'},h('h2',{},'Masuk dengan nomor WA'),h('p',{class:'sub'},'Pakai nomor WhatsApp orang tua yang didaftarkan ke sekolah dan sandi siswa. Jika punya lebih dari satu anak, semuanya muncul sekaligus.'),wa,pw,h('button',{class:'btn pr',onclick:()=>masukWa(wa.value,pw.value)},'Masuk'))}
 async function masukSiswa(id,sandi){if(!sandi)return toast('Isi sandi dulu');
  try{const r=await rpc('login_siswa',{p_kode:K,p_siswa:id,p_sandi:sandi});if(!r.ok)return toast(r.pesan);TK[id]=r.token;IB[id]=r.agama||r.ibadah;svT();if(r.wajib_ganti){V.fase='ganti';render()}else pilih(id)}
  catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}}
@@ -123,20 +131,20 @@ function formJ(nama,sub,nBy,onSave,onBack,ex){
   nBy>1?[h('div',{class:'lbl'},'Diisi oleh'),h('div',{class:'chips'},BYL.slice(0,nBy).map((t,i)=>h('button',{class:'chip'+(V.by===i?' on':''),onclick:()=>{V.by=i;render()}},t)))]:'',
   h('button',{class:'btn pr',disabled:n<7,onclick:onSave},n<7?'Isi semua kebiasaan dulu':'Simpan jurnal'),ex||''))}
 
-function vHome(){return h('div',{},h('div',{class:'card'},h('img',{src:'maskot.jpg',alt:'Dua siswa SDN 007 mengacungkan jempol',style:'width:100%;border-radius:14px;margin-bottom:12px'}),h('h2',{},'Selamat datang 👋'),h('p',{class:'sub'},'Siswa dan orang tua: masuk dengan kode kelas dari guru.'),
- h('button',{class:'btn pr',onclick:()=>setMode('anak')},'👧 Masuk dengan kode kelas'),
+function vHome(){return h('div',{},h('div',{class:'card'},h('img',{src:'maskot.jpg',alt:'Dua siswa SDN 007 mengacungkan jempol',style:'width:100%;border-radius:14px;margin-bottom:12px'}),h('h2',{},'Selamat datang 👋'),h('p',{class:'sub'},'Siswa dan orang tua: masuk dengan nomor WhatsApp orang tua dan sandi, atau dengan kode kelas dari guru.'),
+ h('button',{class:'btn pr',onclick:()=>setMode('anak')},'👧 Masuk sebagai siswa / orang tua'),
  h('button',{class:'btn lt',style:'margin-top:8px',onclick:()=>setMode('guru')},'👩‍🏫 Khusus guru')),h('details',{class:'card'},h('summary',{},'🔒 Privasi & data'),h('p',{class:'sub'},'Aplikasi ini dipakai SDN 007 Sangatta Selatan untuk memantau 7 Kebiasaan Anak Indonesia Hebat. Data yang disimpan: nama siswa, jurnal harian, absensi, agama (untuk menyesuaikan butir ibadah), dan nomor WA orang tua. Hanya guru yang mengajar di kelas itu (wali kelas atau guru mapel) dan super admin yang dapat melihat data siswa. Siswa dan orang tua masuk dengan sandi pribadi dan hanya dapat mengisi jurnal sendiri. Data tidak dijual atau dibagikan di luar sekolah. Untuk koreksi atau penghapusan data, hubungi guru kelas.')))}
 
 function vAnak(){
  if(!K||!CK){const ki=h('input',{placeholder:'Kode kelas, mis. A1B2C3D4E5','aria-label':'Kode kelas',autocapitalize:'characters'});
-  return h('div',{},h('button',{class:'btn lt',onclick:()=>setMode('home')},'← Kembali'),h('div',{class:'card'},h('h2',{},'Masuk dengan kode kelas'),h('p',{class:'sub'},'Minta kode dari guru kelas, atau buka tautan yang dibagikan guru.'),ki,h('button',{class:'btn pr',onclick:()=>bukaKelas(ki.value)},'Masuk')))}
+  return h('div',{},h('button',{class:'btn lt',onclick:()=>setMode('home')},'← Kembali'),cardWa(),h('div',{class:'card'},h('h2',{},'Atau masuk dengan kode kelas'),h('p',{class:'sub'},'Minta kode dari guru kelas, atau buka tautan yang dibagikan guru.'),ki,h('button',{class:'btn pr',onclick:()=>bukaKelas(ki.value)},'Masuk')))}
  if(V.sel){const s=CK.siswa.find(x=>x.id===V.sel);if(!s){V.sel=null;return vAnak()}
   if(V.fase==='ganti')return vSandiGanti(s);if(V.fase!=='form')return vSandiLogin(s);V.ag=agI(IB[s.id]);V.jn=V.ag==='Islam'?'muslim':'umum';return formJ(s.nama,CK.nama?'Kelas '+CK.nama+' · '+fmt(today())+(V.st?' · 🔥 '+V.st+' hari berturut-turut':''):'',2,async()=>{
    const hh=V.draft.slice(),o=BY[V.by],rin=V.jn==='muslim'?{salat:V.dr.slice()}:{ibadah:V.dr.slice()};
    try{await rpc('simpan_jurnal_siswa',{p_token:TK[s.id],p_h:hh,p_oleh:o,p_rinci:rin});toast('Tersimpan ✅')}
    catch(e){if(e instanceof TypeError){Q.push({t:TK[s.id],h:hh,o,r:rin});LS('jah2q',Q);toast('Tersimpan di HP, dikirim saat online')}else{if(/Sesi habis|Ganti sandi/.test(e.message)){delete TK[s.id];svT();V.fase='login';render()}return toast(e.message)}}
    s.sudah=true;LS('jah2c',CK);V.sel=null;V.draft=null;render()},()=>{V.sel=null;V.draft=null;render()},h('button',{class:'btn lt',onclick:()=>aktifkanPush(0,s.id)},'🔔 Ingatkan lewat HP ini tiap sore'))}
- return h('div',{},h('div',{class:'msg',style:'background:#FFF9D6;border-color:#FCE01C;color:#5a4a00'},'⭐ Nilai MANDIRI hari ini: ',h('b',{},nilaiHari())),h('div',{class:'card'},h('h2',{},'Kelas '+CK.nama),h('p',{class:'sub'},CK.sekolah+' · Pilih nama untuk mengisi jurnal hari ini'),
+ return h('div',{},AK.length>1&&AK.some(a=>a.kode===K)?h('div',{class:'card'},h('h2',{},'Anak Anda'),h('div',{class:'chips'},AK.map(a=>h('button',{class:'chip',onclick:()=>pilihAnak(a)},a.nama+' · '+a.kelas)))):'',h('div',{class:'msg',style:'background:#FFF9D6;border-color:#FCE01C;color:#5a4a00'},'⭐ Nilai MANDIRI hari ini: ',h('b',{},nilaiHari())),h('div',{class:'card'},h('h2',{},'Kelas '+CK.nama),h('p',{class:'sub'},CK.sekolah+' · Pilih nama untuk mengisi jurnal hari ini'),
   CK.siswa.length?h('div',{class:'grid'},CK.siswa.map(s=>h('button',{class:'stu'+(s.sudah?' done':''),onclick:()=>pilih(s.id)},h('b',{},s.nama),h('small',{},s.sudah?'✅ sudah mengisi':'belum mengisi')))):h('p',{class:'empty'},'Belum ada siswa di kelas ini.'),
   h('button',{class:'btn dg',onclick:keluar},'Keluar')))}
 
@@ -155,12 +163,12 @@ async function loadG(){
 const bisaKelola=kid=>G.gu.peran==='admin'||!!(G.mk[kid]&&G.mk[kid].akses==='kelola'),peranDi=kid=>G.gu.peran==='admin'?'Super admin':(G.mk[kid]?G.mk[kid].nama:'');
 async function act(fn,msg){try{await fn();await loadG();if(msg)toast(msg)}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}render()}
 
-function vLogin(){const b=vLogin0();return LS('jah2r')?b:h('div',{},h('button',{class:'btn lt',onclick:()=>setMode('home')},'← Kembali'),b)}
+function vLogin(){const b=vLogin0();return LS('jah2r')&&!V.adm?b:h('div',{},h('button',{class:'btn lt',onclick:()=>{V.adm=0;setMode(LS('jah2r')||'home')}},'← Kembali'),b)}
 function vLogin0(){const em=h('input',{type:'email',placeholder:'Email guru','aria-label':'Email',autocomplete:'email'}),pw=h('input',{type:'password',placeholder:'Kata sandi (min. 6 karakter)','aria-label':'Kata sandi',autocomplete:'current-password'});
  const go=async daftar=>{if(!em.value.trim()||pw.value.length<6)return toast('Isi email dan kata sandi (min. 6 karakter)');
   try{const d=await api(daftar?'/auth/v1/signup':'/auth/v1/token?grant_type=password',{m:'POST',b:{email:em.value.trim(),password:pw.value}});
-   if(!d.access_token)return toast('Cek email untuk konfirmasi, lalu masuk');setSes(d);lock('guru');bootG()}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}};
- return h('div',{class:'card'},h('h2',{},'Masuk guru'),h('p',{class:'sub'},LS('jah2kl')?'Kamu diundang menjadi guru sebuah kelas. Pilih Daftar akun baru (atau Masuk jika sudah punya akun), lalu isi nama.':'Guru baru: buka link kelas dari super admin, lalu Daftar.'),em,pw,h('button',{class:'btn pr',onclick:()=>go(false)},'Masuk'),h('button',{class:'btn pr lt',onclick:()=>go(true)},'Daftar akun baru'))}
+   if(!d.access_token)return toast('Cek email untuk konfirmasi, lalu masuk');setSes(d);lock('guru');await bootG();if(V.adm&&G&&(!G.gu||G.gu.peran!=='admin')){toast('Akun ini bukan super admin');V.adm=0;logout()}}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}};
+ return h('div',{class:'card'},h('h2',{},V.adm?'Masuk Super Admin':'Masuk guru'),h('p',{class:'sub'},V.adm?'Khusus pengelola sekolah.':LS('jah2kl')?'Kamu diundang menjadi guru sebuah kelas. Pilih Daftar akun baru (atau Masuk jika sudah punya akun), lalu isi nama.':'Guru baru: buka link kelas dari super admin, lalu Daftar.'),em,pw,h('button',{class:'btn pr',onclick:()=>go(false)},'Masuk'),V.adm?'':h('button',{class:'btn pr lt',onclick:()=>go(true)},'Daftar akun baru'))}
 function vSetup(){
  const iv=LS('jah2kl'),nm=h('input',{placeholder:'Nama Anda','aria-label':'Nama Anda'});
  if(!iv)return h('div',{class:'card'},h('h2',{},'Akun belum terhubung ke kelas'),h('p',{class:'sub'},'Akun guru dibuat oleh super admin. Minta link kelas kepada super admin, lalu buka link itu di HP ini.'),h('button',{class:'btn dg',onclick:logout},'Keluar'));
@@ -295,7 +303,7 @@ function cardDaftar(k){const st=G.pd.kelas.find(x=>x.kelas_id===k.id),q=G.pd.ant
 function vDaftar(){const d=DF;
  if(d.info===undefined)return h('p',{class:'empty'},'Memuat…');
  if(!d.info)return h('div',{class:'card'},h('h2',{},'Link tidak valid'),h('p',{class:'sub'},'Minta link pendaftaran yang benar kepada wali kelas.'));
- if(d.done)return h('div',{class:'card'},h('h2',{},'Pendaftaran terkirim ✅'),h('p',{class:'sub'},'Tunggu wali kelas menyetujui. Setelah disetujui, ketuk tombol di bawah, pilih nama siswa, lalu masuk dengan sandi yang tadi Anda buat.'),h('button',{class:'btn pr',onclick:()=>{V.mode='anak';render();bukaKelas(d.info.kode_kelas)}},'Masuk ke jurnal'));
+ if(d.done)return h('div',{class:'card'},h('h2',{},'Pendaftaran terkirim ✅'),h('p',{class:'sub'},'Tunggu wali kelas menyetujui. Setelah disetujui, masuk dengan nomor WhatsApp yang Anda isi dan sandi yang tadi dibuat.'),h('button',{class:'btn pr',onclick:()=>{V.mode='anak';render()}},'Buka halaman masuk'));
  if(!d.info.aktif)return h('div',{class:'card'},h('h2',{},'Pendaftaran ditutup'),h('p',{class:'sub'},'Pendaftaran Kelas '+d.info.kelas+' sedang ditutup. Hubungi wali kelas.'));
  const nm=h('input',{placeholder:'Nama lengkap siswa','aria-label':'Nama siswa',maxlength:100}),ag=h('select',{'aria-label':'Agama'},[['','Pilih agama…'],...AGAMA.map(a=>[a,a])].map(([v,x])=>h('option',{value:v},x))),wa=h('input',{type:'tel',placeholder:'No. WhatsApp orang tua/wali','aria-label':'No WhatsApp'}),pw=h('input',{type:'password',placeholder:'Buat kata sandi (min. 6 karakter)','aria-label':'Kata sandi',autocomplete:'new-password'}),ck=h('input',{type:'checkbox',style:'width:auto;margin-right:8px'});
  return h('div',{class:'card'},h('h2',{},'Pendaftaran siswa · Kelas '+d.info.kelas),h('p',{class:'sub'},'Isi data ananda. Wali kelas akan memeriksa dan menyetujui sebelum akun aktif.'),nm,ag,wa,pw,
@@ -307,9 +315,12 @@ function cardPeran(){const AK=[['lihat','Hanya lihat'],['kelola','Kelola penuh']
    p.tetap?'':h('select',{'aria-label':'Akses '+p.nama,value:p.akses,onchange:e=>act(()=>rpc('ubah_akses_peran',{p_peran:p.id,p_akses:e.target.value},1),'Akses diubah')},AK.map(([v,x])=>h('option',{value:v},x))),
    p.tetap?'':h('button',{class:'btn dg',onclick:()=>{if(confirm('Hapus peran '+p.nama+'? Kode undangannya ikut dihapus.'))act(()=>rpc('hapus_peran',{p_peran:p.id},1),'Peran dihapus')}},'Hapus'))),
   nm,ak,h('button',{class:'btn pr',onclick:()=>{if(!nm.value.trim())return toast('Isi nama mapel/peran');act(()=>rpc('tambah_peran',{p_nama:nm.value.trim(),p_akses:ak.value},1),'Peran ditambahkan. Linknya ada di menu Kelas.')}},'Tambah mapel/peran'))}
+function cardSandi(){const a=h('input',{type:'password',placeholder:'Sandi baru (min. 6 karakter)','aria-label':'Sandi baru',autocomplete:'new-password'}),b=h('input',{type:'password',placeholder:'Ulangi sandi baru','aria-label':'Ulangi sandi baru',autocomplete:'new-password'});
+ return h('details',{class:'card'},h('summary',{},'🔑 Ganti sandi akun'),a,b,h('button',{class:'btn pr',onclick:async()=>{if(a.value.length<6)return toast('Sandi minimal 6 karakter');if(a.value!==b.value)return toast('Kedua sandi harus sama');try{await api('/auth/v1/user',{m:'PUT',auth:1,b:{password:a.value}});a.value='';b.value='';toast('Sandi baru tersimpan ✅')}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}}},'Simpan sandi baru'))}
 function vAkun(){const s=G.gu.sekolah,adm=G.gu.peran==='admin';
  return h('div',{},h('div',{class:'card'},h('h2',{},G.gu.nama),h('p',{class:'sub'},s.nama+' · '+(adm?'Super Admin':'Guru')),
   h('button',{class:'btn lt',onclick:()=>aktifkanPush(1)},'🔔 Aktifkan pengingat di HP ini'),h('button',{class:'btn lt',onclick:()=>navigator.clipboard.writeText(location.origin+location.pathname+'?guru=1').then(()=>toast('Tautan masuk guru disalin'),()=>toast('Gagal menyalin'))},'🔗 Salin tautan masuk guru'),h('button',{class:'btn lt',onclick:bootG},'🔄 Muat ulang data'),h('button',{class:'btn dg',onclick:logout},'Keluar')),
+  cardSandi(),
   adm?h('div',{class:'card'},h('h2',{},'Hak akses guru'),h('p',{class:'sub'},'Hak guru ditentukan oleh link yang dipakainya: satu link per mapel/peran per kelas, sekali pakai. Kirim link di menu Kelas.'),
    G.dg.length?G.dg.map(x=>{const ad=x.peran==='admin';return h('div',{class:'row'},h('div',{},h('b',{},x.nama),h('small',{},ad?'Super admin · semua kelas':(x.kelas.length?x.kelas.map(c=>c.peran+' '+c.nama).join(', '):'Belum punya kelas'))),
      ad?h('span',{class:'badge'},'👑 Super admin'):h('span',{class:'badge'+(x.kelas.length?'':' no')},x.kelas.length?'✅ Berhak':'⚠️ Tanpa hak'),
@@ -317,7 +328,7 @@ function vAkun(){const s=G.gu.sekolah,adm=G.gu.peran==='admin';
 function keluar(){
  if(Q.length&&!confirm(Q.length+' jurnal belum terkirim dan akan hilang jika keluar. Tetap keluar?'))return;
  try{navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(x=>x&&x.unsubscribe()).catch(()=>{})}catch(e){}
- ses=null;G=null;K=null;CK=null;Q=[];TK={};IB={};
+ V.adm=0;ses=null;G=null;K=null;CK=null;Q=[];TK={};IB={};AK=[];LS('jah2a',null);
  ['jah2s','jah2k','jah2c','jah2r','jah2m','jah2q','jah2u','jah2kl','jah2t','jah2i'].forEach(k=>LS(k,null));
  Object.assign(V,{mode:'home',tab:'hari',kid:null,sel:null,draft:null,by:0,st:0,err:'',load:false,imp:null});
  render();scrollTo(0,0)}
@@ -336,6 +347,7 @@ function render(){const y=scrollY;let v;
  n.replaceChildren(...(on?T.map(([k,i,t])=>h('button',{class:V.tab===k?'on':'','aria-current':V.tab===k?'page':false,onclick:()=>{V.tab=k;V.sel=null;V.draft=null;render();scrollTo(0,0)}},h('span',{},i),t)):[]));n.hidden=!on;scrollTo(0,y)}
 addEventListener('online',flush);
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+(()=>{let n=0,t;const im=document.querySelector('header img');im.addEventListener('click',()=>{clearTimeout(t);if(++n>=5){n=0;V.adm=1;setMode('guru')}else t=setTimeout(()=>{n=0},2500)})})();
 const sp=new URLSearchParams(location.search),role=LS('jah2r'),qg=sp.get('guru'),ud=sp.get('kelas'),kd=sp.get('kode'),qd=sp.get('daftar');
 if(qg||ud||kd||qd)history.replaceState(null,'',location.pathname);
 let blok='';
