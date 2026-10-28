@@ -267,18 +267,44 @@ function unduhRekap(k,p,days){
  const csv='\ufeffsep=;\n'+[hd,...rows].map(r=>r.map(q).join(';')).join('\n');
  h('a',{href:URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),download:'rekap-'+k.nama+'-'+today()+'.csv'}).click()}
 function vGRekap(){
- if(!G.kl.length)return vGHari();
+ if(!G.kl.length)return vGHari();if(V.lk)return vLapKeb();
  const k=G.kl.find(x=>x.id===V.kid)||G.kl[0];V.kid=k.id;
  const p=G.si.filter(s=>s.kelas_id===k.id&&(!V.grp||V.grp==='semua'||agS(s)===V.grp)),days=[...Array(7)].map((_,i)=>addDays(today(),-i)),ent=[];
  days.forEach(d=>p.forEach(s=>{const e=G.j[d+s.id];if(e)ent.push(e)}));
  const warn=p.filter(s=>days.slice(0,3).every(d=>!G.j[d+s.id])),grp=V.grp||'semua',
   rincian=[...AGAMA.map(a=>[a,a+' · '+(a==='Islam'?'salat 5 waktu':'ibadah harian'),a==='Islam'?'salat':'ibadah',IBD[a]]),['','Agama belum diisi','ibadah',UMUMI]].filter(g=>(grp==='semua'||grp===g[0])&&p.some(s=>agS(s)===g[0])).map(([g,jd,key,lab])=>{const es=[];days.forEach(d=>p.filter(s=>agS(s)===g).forEach(s=>{const e=G.j[d+s.id];if(e&&e.rinci&&e.rinci[key])es.push(e.rinci[key])}));
    return h('div',{class:'card'},h('h2',{},jd),h('p',{class:'sub'},p.filter(s=>agS(s)===g).length+' siswa · persentase butir yang dilakukan'),es.length?lab.map((x,j)=>{const pc=Math.round(es.filter(a=>a[j]===1).length/es.length*100);return h('div',{style:'margin-bottom:10px'},h('div',{},x+' — '+pc+'%'),h('div',{class:'bar'},h('i',{style:'width:'+pc+'%'})))}):h('p',{class:'empty'},'Belum ada jurnal masuk.'))});
- return h('div',{},h('div',{class:'card'},h('h2',{},'Rekap Kelas '+k.nama+' · 7 hari sampai '+fmt(today())),h('p',{class:'sub'},'Persentase jawaban "Sudah" dari jurnal yang masuk.'),kchips(),h('div',{class:'chips'},[['semua','Semua siswa'],...AGAMA.map(a=>[a,a])].map(([g,x])=>h('button',{class:'chip'+((V.grp||'semua')===g?' on':''),onclick:()=>{V.grp=g;render()}},x))),h('button',{class:'btn lt',onclick:()=>unduhRekap(k,p,days)},'⬇️ Unduh Excel'),h('button',{class:'btn lt',onclick:()=>print()},'🖨️ Cetak'),
+ return h('div',{},h('div',{class:'card'},h('h2',{},'Rekap Kelas '+k.nama+' · 7 hari sampai '+fmt(today())),h('p',{class:'sub'},'Persentase jawaban "Sudah" dari jurnal yang masuk.'),kchips(),h('div',{class:'chips'},[['semua','Semua siswa'],...AGAMA.map(a=>[a,a])].map(([g,x])=>h('button',{class:'chip'+((V.grp||'semua')===g?' on':''),onclick:()=>{V.grp=g;render()}},x))),h('button',{class:'btn lt',onclick:()=>unduhRekap(k,p,days)},'⬇️ Unduh Excel'),h('button',{class:'btn lt',onclick:()=>print()},'🖨️ Cetak'),h('button',{class:'btn pr',onclick:()=>{V.lk={kid:k.id,bulan:today().slice(0,7)};render()}},'📄 Laporan bulanan (siap cetak)'),
   ent.length?H.map((x,i)=>{const pc=Math.round(ent.filter(e=>e.h[i]===1).length/ent.length*100);return h('div',{style:'margin-bottom:10px'},h('div',{},x[0]+' '+x[1]+' — '+pc+'%'),h('div',{class:'bar'},h('i',{style:'width:'+pc+'%;background:'+HC[i]})))}):h('p',{class:'empty'},'Belum ada jurnal masuk.')),
   rincian,h('div',{class:'card'},h('h2',{},'Perlu perhatian'),h('p',{class:'sub'},'Tidak mengisi jurnal 3 hari terakhir.'),warn.length?warn.map(s=>h('div',{class:'row'},h('b',{},s.nama))):h('p',{class:'empty'},'Tidak ada. 👍')),
   h('div',{class:'card'},h('h2',{},'Keaktifan per siswa'),p.map(s=>h('div',{class:'row'},h('b',{},s.nama),h('span',{class:'badge'},days.filter(d=>G.j[d+s.id]).length+'/7 hari')))))}
 
+const KEPSEK='Arianto, M.Pd';
+const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function vLapKeb(){const L=V.lk,k=G.kl.find(x=>x.id===L.kid)||{nama:''},[y,m]=L.bulan.split('-').map(Number),sw=G.si.filter(s=>s.kelas_id===L.kid),
+ d1=L.bulan+'-01',d2=L.bulan+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0'),pc=(a,b)=>b?Math.round(a/b*100):0,pr=x=>x>=80?'Sangat baik':x>=60?'Baik':x>=40?'Cukup':'Perlu bimbingan';
+ if(L.r===undefined&&!L.ld){L.ld=1;(sw.length?ambilSemua('/rest/v1/jurnal?select=siswa_id,tanggal,h&order=tanggal,siswa_id&siswa_id=in.('+sw.map(s=>s.id).join(',')+')&tanggal=gte.'+d1+'&tanggal=lte.'+d2):Promise.resolve([])).then(r=>{L.r=r;render()},()=>{L.r=[];render()})}
+ const bln=h('input',{type:'month',value:L.bulan,'aria-label':'Bulan',onchange:e=>{if(e.target.value){L.bulan=e.target.value;L.r=undefined;L.ld=0;render()}}}),
+ ctl=h('div',{class:'card'},h('button',{class:'btn lt',onclick:()=>{V.lk=null;render()}},'← Kembali ke rekap'),h('div',{class:'two'},bln,h('button',{class:'btn pr',onclick:()=>print()},'🖨️ Cetak / simpan PDF')));
+ if(L.r===undefined)return h('div',{},ctl,h('p',{class:'empty'},'Menyiapkan laporan...'));
+ const ent=L.r,hk=new Set(ent.map(e=>e.tanggal)).size,pk=H.map((x,i)=>pc(ent.filter(e=>e.h[i]===1).length,ent.length)),rata=pc(ent.reduce((a,e)=>a+e.h.filter(v=>v===1).length,0),ent.length*7),
+ rs=sw.map(s=>{const es=ent.filter(e=>e.siswa_id===s.id),pi=H.map((x,i)=>pc(es.filter(e=>e.h[i]===1).length,es.length));return{s,hari:es.length,pi,r:pc(es.reduce((a,e)=>a+e.h.filter(v=>v===1).length,0),es.length*7)}}),
+ aktif=rs.filter(x=>x.hari>0).length,kuat=pk.indexOf(Math.max(...pk)),lemah=pk.indexOf(Math.min(...pk)),
+ tel=rs.filter(x=>x.hari>0&&x.r>=80&&x.hari>=hk*.8),pdm=rs.filter(x=>x.hari===0||x.r<40),
+ box=(t,v)=>h('div',{style:'flex:1;min-width:130px;border:1px solid #cfdcec;border-radius:12px;padding:10px;text-align:center'},h('div',{style:'font-size:1.4rem;font-weight:800;color:#b81d2c'},v),h('small',{},t)),
+ td=(t,b)=>h('td',{style:'border:1px solid #cfdcec;padding:5px;text-align:center'+(b?';font-weight:700':'')},t),th=t=>h('th',{style:'border:1px solid #cfdcec;padding:5px;background:#f1f5fb'},t);
+ return h('div',{},ctl,h('div',{class:'card'},
+  h('div',{style:'text-align:center;margin-bottom:12px'},h('b',{style:'font-size:1.05rem'},'LAPORAN GERAKAN 7 KEBIASAAN ANAK INDONESIA HEBAT'),h('div',{},'SDN 007 Sangatta Selatan'),h('div',{},'Kelas '+k.nama+' · '+BLN[m-1]+' '+y)),
+  !ent.length?h('p',{class:'empty'},'Belum ada jurnal siswa pada bulan ini.'):h('div',{},
+  h('h2',{},'1. Ringkasan'),h('div',{style:'display:flex;flex-wrap:wrap;gap:8px'},box('Siswa mengisi',aktif+' dari '+sw.length),box('Hari jurnal terisi',hk+' hari'),box('Kebiasaan terlaksana',rata+'%'),box('Predikat kelas',pr(rata))),
+  h('p',{class:'sub'},'Selama '+BLN[m-1]+' '+y+', '+aktif+' dari '+sw.length+' siswa mengisi jurnal. Rata-rata kebiasaan yang dilakukan '+rata+'% ('+pr(rata)+'). Kebiasaan paling kuat: '+H[kuat][1]+' ('+pk[kuat]+'%). Perlu ditingkatkan: '+H[lemah][1]+' ('+pk[lemah]+'%).'),
+  h('h2',{},'2. Capaian tiap kebiasaan'),H.map((x,i)=>h('div',{style:'margin-bottom:10px'},h('div',{},x[0]+' '+x[1]+' — '+pk[i]+'% ('+pr(pk[i])+')'),h('div',{class:'bar'},h('i',{style:'width:'+pk[i]+'%;background:'+HC[i]})))),
+  h('p',{class:'hint'},'Predikat: Sangat baik ≥80%, Baik 60–79%, Cukup 40–59%, Perlu bimbingan <40%.'),
+  h('h2',{},'3. Rincian per siswa'),h('div',{style:'overflow-x:auto'},h('table',{style:'width:100%;border-collapse:collapse;font-size:.78rem'},h('tr',{},th('No'),th('Nama'),th('Hari isi'),...H.map(x=>th(x[0])),th('Rata-rata'),th('Predikat')),
+   ...rs.map((x,i)=>h('tr',{},td(i+1),h('td',{style:'border:1px solid #cfdcec;padding:5px'},x.s.nama),td(x.hari+'/'+hk),...x.pi.map(v=>td(x.hari?v+'%':'-')),td(x.hari?x.r+'%':'-',1),td(x.hari?pr(x.r):'Belum mengisi'))))),
+  h('p',{class:'hint'},'Angka tiap kebiasaan = persentase hari siswa menjawab "Sudah".'),
+  h('h2',{},'4. Catatan wali kelas'),h('p',{class:'sub'},'⭐ Siswa teladan (rata-rata ≥80% dan rajin mengisi): '+(tel.length?tel.map(x=>x.s.nama).join(', '):'belum ada')+'.'),h('p',{class:'sub'},'🤝 Perlu pendampingan (rata-rata <40% atau belum mengisi): '+(pdm.length?pdm.map(x=>x.s.nama).join(', '):'tidak ada')+'.')),
+  h('div',{style:'display:flex;justify-content:space-between;margin-top:28px;text-align:center'},h('div',{},h('div',{},'Mengetahui,'),h('div',{},'Kepala Sekolah'),h('div',{style:'height:56px'}),h('div',{style:'font-weight:700;text-decoration:underline'},KEPSEK)),h('div',{},h('div',{},'Sangatta Selatan, '+fmt(today())),h('div',{},'Wali Kelas '+k.nama),h('div',{style:'height:56px'}),h('div',{},'( ........................ )')))))}
 function vGKelas(){const adm=G.gu.peran==='admin';
  const tg=h('select',{'aria-label':'Tingkat'},[1,2,3,4,5,6].map(k=>h('option',{value:k},'Tingkat '+k))),nk=h('input',{placeholder:'Nama kelas, mis. 3A','aria-label':'Nama kelas'}),
   ta=h('textarea',{rows:3,placeholder:'Nama siswa, satu per baris','aria-label':'Nama siswa'}),jb=h('select',{'aria-label':'Agama siswa'},[['','Pilih agama…'],...AGAMA.map(a=>[a,a])].map(([v,x])=>h('option',{value:v},x))),wa=h('input',{type:'tel',placeholder:'No. WA orang tua (opsional, otomatis dirapikan ke 62…)','aria-label':'No WA'}),
