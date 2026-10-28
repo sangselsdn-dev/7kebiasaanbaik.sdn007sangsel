@@ -301,7 +301,7 @@ function vGMengajar(){
  const k=G.kl.find(x=>x.id===V.kid)||G.kl[0];V.kid=k.id;
  const f=V.f&&V.f.kid===k.id?V.f:(V.f=nfJM(k)),me=uid(),adm=G.gu.peran==='admin';
  const inp=(key,ph,o={})=>{const e=h(o.ta?'textarea':'input',Object.assign({placeholder:ph,'aria-label':ph,maxlength:o.max||100,value:f[key]},o.a||{}));e.addEventListener('input',()=>{f[key]=e.value});return e};
- const simpan=async()=>{if(!f.mapel.trim())return toast('Isi mata pelajaran');if(!f.materi.trim())return toast('Isi materi pokok');
+ const simpan=async()=>{if(!f.tanggal)return toast('Isi tanggal');if(f.tanggal<addDays(today(),-30)&&!(f.id&&f.t0===f.tanggal))return toast('Tanggal maksimal 30 hari ke belakang');if(!f.mapel.trim())return toast('Isi mata pelajaran');if(!f.materi.trim())return toast('Isi materi pokok');
   const b={kelas_id:k.id,tanggal:f.tanggal,mapel:f.mapel.trim(),jam_ke:f.jam_ke.trim()||null,waktu:f.waktu.trim()||null,materi:f.materi.trim(),kegiatan:f.kegiatan,metode:f.metode.trim()||null,refleksi:f.refleksi.trim()||null};
   try{if(f.id)await api('/rest/v1/jurnal_mengajar?id=eq.'+f.id,{m:'PATCH',auth:1,h:MIN,b});else await api('/rest/v1/jurnal_mengajar',{m:'POST',auth:1,h:MIN,b:{...b,guru_id:me}});
    V.f=null;muatJM();toast('Jurnal mengajar tersimpan ✅');render()}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}};
@@ -309,7 +309,7 @@ function vGMengajar(){
   gsel=adm?h('select',{'aria-label':'Guru'},gs.map(g=>h('option',{value:g},g===me?G.gu.nama+' (saya)':((G.dg.find(x=>x.user_id===g)||{}).nama||'Guru')))):null;
  return h('div',{},sub,
   h('div',{class:'card'},h('h2',{},f.id?'Ubah jurnal mengajar':'Jurnal mengajar'),kchips(),h('p',{class:'sub'},'Kehadiran siswa diambil otomatis dari absensi saat laporan dibuat.'),
-   inp('tanggal','Tanggal',{a:{type:'date'}}),
+   inp('tanggal','Tanggal',{a:{type:'date',min:addDays(today(),-30)}}),
    Object.assign(inp('mapel','Mata pelajaran',{max:60,a:{list:'mp'}})),h('datalist',{id:'mp'},MAPEL.map(m=>h('option',{value:m}))),
    inp('jam_ke','Jam ke (mis. 1-2)',{max:30}),inp('waktu','Waktu (mis. 07:30-09:00)',{max:20}),
    inp('materi','Materi pokok / tujuan pembelajaran',{ta:1,max:500,a:{rows:3}}),
@@ -320,7 +320,7 @@ function vGMengajar(){
   h('div',{class:'card'},h('h2',{},'Laporan bulanan'),h('p',{class:'sub'},'Format jurnal mengajar harian, siap dicetak atau disimpan sebagai PDF.'),bln,gsel||'',
    h('button',{class:'btn pr',onclick:()=>{if(!bln.value)return toast('Pilih bulan dulu');V.lap={bulan:bln.value,kid:k.id,guru:gsel?gsel.value:me};render();scrollTo(0,0)}},'📄 Buka laporan kelas '+k.nama)),
   h('div',{class:'card'},h('h2',{},'Jurnal terakhir saya'),mine.length?mine.map(x=>{const kn=(G.kl.find(c=>c.id===x.kelas_id)||{}).nama||'';return h('div',{class:'row'},h('div',{},h('b',{},fmt(x.tanggal)),h('small',{},x.mapel+' · Kelas '+kn+(x.jam_ke?' · jam '+x.jam_ke:''))),
-    h('button',{class:'btn lt',onclick:()=>{V.kid=x.kelas_id;V.f={kid:x.kelas_id,id:x.id,tanggal:x.tanggal,mapel:x.mapel,jam_ke:x.jam_ke||'',waktu:x.waktu||'',materi:x.materi,kegiatan:x.kegiatan||[],metode:x.metode||'',refleksi:x.refleksi||''};render();scrollTo(0,0)}},'Ubah'),
+    h('button',{class:'btn lt',onclick:()=>{V.kid=x.kelas_id;V.f={kid:x.kelas_id,id:x.id,t0:x.tanggal,tanggal:x.tanggal,mapel:x.mapel,jam_ke:x.jam_ke||'',waktu:x.waktu||'',materi:x.materi,kegiatan:x.kegiatan||[],metode:x.metode||'',refleksi:x.refleksi||''};render();scrollTo(0,0)}},'Ubah'),
     h('button',{class:'btn dg',onclick:async()=>{if(!confirm('Hapus jurnal mengajar tanggal '+x.tanggal+'?'))return;try{await api('/rest/v1/jurnal_mengajar?id=eq.'+x.id,{m:'DELETE',auth:1,h:MIN});muatJM();toast('Jurnal dihapus');render()}catch(e){toast(e.message)}}},'Hapus'))}):h('p',{class:'empty'},'Belum ada jurnal mengajar.')))}
 function vLapJM(){const L=V.lap,k=G.kl.find(x=>x.id===L.kid)||{nama:''},[y,m]=L.bulan.split('-').map(Number),
   rows=G.jm.filter(x=>x.kelas_id===L.kid&&x.guru_id===L.guru&&x.tanggal.startsWith(L.bulan)).sort((a,b)=>a.tanggal<b.tanggal?-1:a.tanggal>b.tanggal?1:(a.jam_ke||'').localeCompare(b.jam_ke||''));
