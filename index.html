@@ -154,7 +154,7 @@ async function loadG(){
  const d0=addDays(today(),-6),a={auth:1};
  if(ses&&ses.exp-Date.now()<60000)await api('/rest/v1/guru?select=nama&limit=1',a);
  const[kl,si,ju,ab,gu,mk,pr]=await Promise.all([api('/rest/v1/kelas?select=id,tingkat,nama,kode&order=tingkat,nama',a),api('/rest/v1/siswa?select=id,nama,wa_ortu,kelas_id,ibadah,agama,wajib_ganti&aktif=eq.true&order=nama',a),
-  api('/rest/v1/jurnal?select=siswa_id,tanggal,h,diisi_oleh,rinci&tanggal=gte.'+d0,a),api('/rest/v1/absensi?select=siswa_id,tanggal,status&tanggal=gte.'+d0,a),api('/rest/v1/guru?select=nama,peran,sekolah_id,sekolah:sekolah_id(nama,kode_guru)',a),api('/rest/v1/kelas_guru?select=kelas_id,peran:peran_id(nama,akses)',a),api('/rest/v1/peran_guru?select=id,nama,akses,tetap&order=urutan,nama',a)]);
+  ambilSemua('/rest/v1/jurnal?select=siswa_id,tanggal,h,diisi_oleh,rinci&order=tanggal,siswa_id&tanggal=gte.'+d0),ambilSemua('/rest/v1/absensi?select=siswa_id,tanggal,status&order=tanggal,siswa_id&tanggal=gte.'+d0),api('/rest/v1/guru?select=nama,peran,sekolah_id,sekolah:sekolah_id(nama,kode_guru)',a),api('/rest/v1/kelas_guru?select=kelas_id,peran:peran_id(nama,akses)',a),api('/rest/v1/peran_guru?select=id,nama,akses,tetap&order=urutan,nama',a)]);
  const j={},ab2={};ju.forEach(r=>j[r.tanggal+r.siswa_id]=r);ab.forEach(r=>ab2[r.tanggal+r.siswa_id]=r.status);
  G={kl,si,j,a:ab2,gu:gu[0]||null,dg:[],un:[],pr,mk:Object.fromEntries(mk.map(r=>[r.kelas_id,r.peran])),ar:await api('/rest/v1/siswa?select=id,nama,kelas_id&aktif=eq.false&order=nama',a)};
  G.pd={kelas:[],antrean:[]};if(G.gu&&kl.some(k=>bisaKelola(k.id)))try{G.pd=await rpc('status_pendaftaran',{},1)}catch(e){}
@@ -295,7 +295,7 @@ function vGMengajar(){
  if(!G.kl.length)return h('div',{class:'card'},h('p',{class:'empty'},'Belum ada kelas untuk Anda.'));
  const sub=h('div',{class:'chips'},[['jurnal','📝 Jurnal mengajar'],['nilai','🧮 Penilaian harian']].map(([k,t])=>h('button',{class:'chip'+((V.mj||'jurnal')===k?' on':''),onclick:()=>{V.mj=k;V.lap=null;V.ns=null;V.nl=null;render()}},t)));
  if(V.mj==='nilai')return V.ns||V.nl?vGNilai():h('div',{},sub,vGNilai());
- if(G.jm===undefined&&!G.jmL){G.jmL=1;api('/rest/v1/jurnal_mengajar?select=*&order=tanggal.desc,created_at.desc&limit=300',{auth:1}).then(r=>{G.jm=r;render()},e=>{G.jm=[];toast(e.message);render()})}
+ if(G.jm===undefined&&!G.jmL){G.jmL=1;ambilSemua('/rest/v1/jurnal_mengajar?select=*&order=tanggal.desc,created_at.desc,id').then(r=>{G.jm=r;render()},e=>{G.jm=[];toast(e.message);render()})}
  if(G.jm===undefined)return h('p',{class:'empty'},'Memuat…');
  if(V.lap)return vLapJM();
  const k=G.kl.find(x=>x.id===V.kid)||G.kl[0];V.kid=k.id;
@@ -305,7 +305,7 @@ function vGMengajar(){
   const b={kelas_id:k.id,tanggal:f.tanggal,mapel:f.mapel.trim(),jam_ke:f.jam_ke.trim()||null,waktu:f.waktu.trim()||null,materi:f.materi.trim(),kegiatan:f.kegiatan,metode:f.metode.trim()||null,refleksi:f.refleksi.trim()||null};
   try{if(f.id)await api('/rest/v1/jurnal_mengajar?id=eq.'+f.id,{m:'PATCH',auth:1,h:MIN,b});else await api('/rest/v1/jurnal_mengajar',{m:'POST',auth:1,h:MIN,b:{...b,guru_id:me}});
    V.f=null;muatJM();toast('Jurnal mengajar tersimpan ✅');render()}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}};
- const mine=G.jm.filter(x=>x.guru_id===me).slice(0,15),bln=h('input',{type:'month','aria-label':'Bulan laporan',value:today().slice(0,7)}),gs=[...new Set(G.jm.map(x=>x.guru_id))],
+ const mine=G.jm.filter(x=>x.guru_id===me).slice(0,15),bln=h('input',{type:'month','aria-label':'Bulan laporan',value:today().slice(0,7)}),gs=[...new Set(G.jm.filter(x=>x.kelas_id===k.id).map(x=>x.guru_id))],
   gsel=adm?h('select',{'aria-label':'Guru'},gs.map(g=>h('option',{value:g},g===me?G.gu.nama+' (saya)':((G.dg.find(x=>x.user_id===g)||{}).nama||'Guru')))):null;
  return h('div',{},sub,
   h('div',{class:'card'},h('h2',{},f.id?'Ubah jurnal mengajar':'Jurnal mengajar'),kchips(),h('p',{class:'sub'},'Kehadiran siswa diambil otomatis dari absensi saat laporan dibuat.'),
@@ -324,7 +324,7 @@ function vGMengajar(){
     h('button',{class:'btn dg',onclick:async()=>{if(!confirm('Hapus jurnal mengajar tanggal '+x.tanggal+'?'))return;try{await api('/rest/v1/jurnal_mengajar?id=eq.'+x.id,{m:'DELETE',auth:1,h:MIN});muatJM();toast('Jurnal dihapus');render()}catch(e){toast(e.message)}}},'Hapus'))}):h('p',{class:'empty'},'Belum ada jurnal mengajar.')))}
 function vLapJM(){const L=V.lap,k=G.kl.find(x=>x.id===L.kid)||{nama:''},[y,m]=L.bulan.split('-').map(Number),
   rows=G.jm.filter(x=>x.kelas_id===L.kid&&x.guru_id===L.guru&&x.tanggal.startsWith(L.bulan)).sort((a,b)=>a.tanggal<b.tanggal?-1:a.tanggal>b.tanggal?1:(a.jam_ke||'').localeCompare(b.jam_ke||''));
- if(L.ab===undefined&&!L.ld){L.ld=1;const ds=[...new Set(rows.map(r=>r.tanggal))];(ds.length?api('/rest/v1/absensi?select=siswa_id,tanggal,status&limit=1000&tanggal=in.('+ds.join(',')+')',{auth:1}):Promise.resolve([])).then(r=>{L.ab=r;render()},()=>{L.ab=[];render()})}
+ if(L.ab===undefined&&!L.ld){L.ld=1;const ds=[...new Set(rows.map(r=>r.tanggal))];(ds.length?ambilSemua('/rest/v1/absensi?select=siswa_id,tanggal,status&order=tanggal,siswa_id&siswa_id=in.('+G.si.filter(s=>s.kelas_id===L.kid).map(s=>s.id).join(',')+')&tanggal=in.('+ds.join(',')+')'):Promise.resolve([])).then(r=>{L.ab=r;render()},()=>{L.ab=[];render()})}
  if(L.ab===undefined)return h('p',{class:'empty'},'Menyiapkan laporan…');
  const S=G.si.filter(s=>s.kelas_id===L.kid),st={};L.ab.forEach(r=>st[r.tanggal+r.siswa_id]=r.status);
  const hadir=d=>{const o={sakit:[],izin:[],alpa:[]};S.forEach(s=>{const v=st[d+s.id];if(o[v])o[v].push(s.nama)});const n=o.sakit.length+o.izin.length+o.alpa.length;
@@ -343,7 +343,7 @@ const JN=['Ulangan','Tugas','Praktik','Karakter'],PRED=['','Perlu Bimbingan','Cu
 const muatPN=()=>{G.pn=undefined;G.pnL=0};
 async function ambilSemua(p){let o=0,all=[];for(;;){const r=await api(p+'&limit=1000&offset='+o,{auth:1});all=all.concat(r);if(r.length<1000)break;o+=1000}return all}
 function vGNilai(){
- if(G.pn===undefined&&!G.pnL){G.pnL=1;api('/rest/v1/penilaian?select=*&order=tanggal.desc,created_at.desc&limit=500',{auth:1}).then(r=>{G.pn=r;render()},e=>{G.pn=[];toast(e.message);render()})}
+ if(G.pn===undefined&&!G.pnL){G.pnL=1;ambilSemua('/rest/v1/penilaian?select=*&order=tanggal.desc,created_at.desc,id').then(r=>{G.pn=r;render()},e=>{G.pn=[];toast(e.message);render()})}
  if(G.pn===undefined)return h('p',{class:'empty'},'Memuat…');
  if(V.ns)return vIsiNilai();
  if(V.nl)return vLapNilai();
