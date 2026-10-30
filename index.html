@@ -178,11 +178,12 @@ const bisaKelola=kid=>G.gu.peran==='admin'||!!(G.mk[kid]&&G.mk[kid].akses==='kel
 async function act(fn,msg){try{await fn();await loadG();if(msg)toast(msg)}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}render()}
 
 function vLogin(){const b=vLogin0();return LS('jah2r')&&!V.adm?b:h('div',{},h('button',{class:'btn lt',onclick:()=>{V.adm=0;setMode(LS('jah2r')||'home')}},'← Kembali'),b)}
-function vLogin0(){const em=h('input',{type:'email',placeholder:'Email guru','aria-label':'Email',autocomplete:'email'}),pw=h('input',{type:'password',placeholder:'Kata sandi (min. 6 karakter)','aria-label':'Kata sandi',autocomplete:'current-password'});
- const go=async daftar=>{if(!em.value.trim()||pw.value.length<6)return toast('Isi email dan kata sandi (min. 6 karakter)');
-  try{const d=await api(daftar?'/auth/v1/signup':'/auth/v1/token?grant_type=password',{m:'POST',b:{email:em.value.trim(),password:pw.value}});
+const ADM_EMAIL='sohib01@gmail.com';
+function vLogin0(){const em=h('input',{type:'email',placeholder:'Email guru','aria-label':'Email',autocomplete:'email'}),pw=h('input',{type:'password',placeholder:V.adm?'Kata sandi super admin':'Kata sandi (min. 6 karakter)','aria-label':'Kata sandi',autocomplete:'current-password'});
+ const go=async daftar=>{const eml=V.adm?ADM_EMAIL:em.value.trim();if(!eml||pw.value.length<6)return toast(V.adm?'Isi kata sandi super admin':'Isi email dan kata sandi (min. 6 karakter)');
+  try{const d=await api(daftar&&!V.adm?'/auth/v1/signup':'/auth/v1/token?grant_type=password',{m:'POST',b:{email:eml,password:pw.value}});
    if(!d.access_token)return toast('Cek email untuk konfirmasi, lalu masuk');setSes(d);lock('guru');await bootG();if(V.adm&&G&&(!G.gu||G.gu.peran!=='admin')){toast('Akun ini bukan super admin');V.adm=0;logout()}}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}};
- return h('div',{class:'card'},h('h2',{},V.adm?'Masuk Super Admin':'Masuk guru'),h('p',{class:'sub'},V.adm?'Khusus pengelola sekolah.':LS('jah2kl')?'Kamu diundang menjadi guru sebuah kelas. Pilih Daftar akun baru (atau Masuk jika sudah punya akun), lalu isi nama.':'Guru baru: buka link kelas dari super admin, lalu Daftar.'),em,pw,h('button',{class:'btn pr',onclick:()=>go(false)},'Masuk'),V.adm?'':h('button',{class:'btn pr lt',onclick:()=>go(true)},'Daftar akun baru'))}
+ return h('div',{class:'card'},h('h2',{},V.adm?'Masuk Super Admin':'Masuk guru'),h('p',{class:'sub'},V.adm?'Khusus pengelola sekolah.':LS('jah2kl')?'Kamu diundang menjadi guru sebuah kelas. Pilih Daftar akun baru (atau Masuk jika sudah punya akun), lalu isi nama.':'Guru baru: buka link kelas dari super admin, lalu Daftar.'),V.adm?'':em,pw,h('button',{class:'btn pr',onclick:()=>go(false)},'Masuk'),V.adm?'':h('button',{class:'btn pr lt',onclick:()=>go(true)},'Daftar akun baru'))}
 function vSetup(){
  const iv=LS('jah2kl'),nm=h('input',{placeholder:'Nama Anda','aria-label':'Nama Anda'});
  if(!iv)return h('div',{class:'card'},h('h2',{},'Akun belum terhubung ke kelas'),h('p',{class:'sub'},'Akun guru dibuat oleh super admin. Minta link kelas kepada super admin, lalu buka link itu di HP ini.'),h('button',{class:'btn dg',onclick:logout},'Keluar'));
