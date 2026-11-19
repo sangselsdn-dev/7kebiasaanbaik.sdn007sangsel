@@ -518,22 +518,54 @@ function cardPeran(){const AK=[['lihat','Hanya lihat'],['kelola','Kelola penuh']
   nm,ak,h('button',{class:'btn pr',onclick:()=>{if(!nm.value.trim())return toast('Isi nama mapel/peran');act(()=>rpc('tambah_peran',{p_nama:nm.value.trim(),p_akses:ak.value},1),'Peran ditambahkan. Linknya ada di menu Kelas.')}},'Tambah mapel/peran'))}
 function cardSandi(){const a=h('input',{type:'password',placeholder:'Sandi baru (min. 6 karakter)','aria-label':'Sandi baru',autocomplete:'new-password'}),b=h('input',{type:'password',placeholder:'Ulangi sandi baru','aria-label':'Ulangi sandi baru',autocomplete:'new-password'});
  return h('details',{class:'card'},h('summary',{},'🔑 Ganti sandi akun'),a,b,h('button',{class:'btn pr',onclick:async()=>{if(a.value.length<6)return toast('Sandi minimal 6 karakter');if(a.value!==b.value)return toast('Kedua sandi harus sama');try{await api('/auth/v1/user',{m:'PUT',auth:1,b:{password:a.value}});a.value='';b.value='';toast('Sandi baru tersimpan ✅')}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}}},'Simpan sandi baru'))}
+/* ===== Super admin: tugaskan satu guru ke banyak kelas ===== */
+function bukaTugas(g){
+ const asg=g.kelas||[],cnt={};asg.forEach(c=>{cnt[c.peran_id]=(cnt[c.peran_id]||0)+1});
+ const prs=G.pr||[],top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0],def=top||(prs.find(p=>p.nama!=='Wali Kelas')||prs[0]||{}).id;
+ V.tg={uid:g.user_id,peran:def,set:new Set(asg.filter(c=>c.peran_id===def).map(c=>c.id))};render();scrollTo(0,0)}
+function cardTugas(){
+ const t=V.tg,g=(G.dg||[]).find(x=>x.user_id===t.uid);if(!g){V.tg=null;return ''}
+ const prs=G.pr||[],kls=[...G.kl].sort((a,b)=>a.tingkat-b.tingkat||String(a.nama).localeCompare(String(b.nama),'id',{numeric:true})),
+ asg=Object.fromEntries((g.kelas||[]).map(c=>[c.id,c])),
+ awal=new Set((g.kelas||[]).filter(c=>c.peran_id===t.peran).map(c=>c.id)),
+ pn=(prs.find(p=>p.id===t.peran)||{}).nama||'',
+ info=h('p',{class:'hint'}),
+ hit=()=>{const cabut=[...awal].filter(x=>!t.set.has(x)).length,baru=[...t.set].filter(x=>!awal.has(x)).length;info.textContent=t.set.size+' kelas dipilih'+(baru?' · '+baru+' ditambah':'')+(cabut?' · '+cabut+' dicabut':'')},
+ tingkat=[...new Set(kls.map(k=>k.tingkat))];
+ hit();
+ return h('div',{class:'card mk'},h('h2',{},'Atur kelas: '+g.nama),
+  h('p',{class:'sub'},'Pilih peran atau mapel, lalu centang semua kelas tempat guru ini mengajar. Kelas yang tidak dicentang akan dicabut untuk peran ini. Peran lain tidak berubah.'),
+  h('label',{class:'lb'},'Peran / mapel'),
+  h('select',{'aria-label':'Peran atau mapel',onchange:e=>{t.peran=e.target.value;t.set=new Set((g.kelas||[]).filter(c=>c.peran_id===t.peran).map(c=>c.id));render()}},
+   prs.map(p=>h('option',{value:p.id,selected:p.id===t.peran},p.nama+(p.akses==='kelola'?' (kelola penuh)':' (hanya lihat)')))),
+  h('div',{class:'chips'},tingkat.map(n=>{const ids=kls.filter(k=>k.tingkat===n).map(k=>k.id),all=ids.every(i=>t.set.has(i));
+   return h('button',{class:'chip sm'+(all?' on':''),onclick:()=>{ids.forEach(i=>{all?t.set.delete(i):t.set.add(i)});render()}},'Semua kelas '+n)})),
+  kls.map(k=>{const o=asg[k.id],lain=o&&o.peran_id!==t.peran;
+   return h('label',{class:'mkp'},h('input',{type:'checkbox',checked:t.set.has(k.id),onchange:e=>{e.target.checked?t.set.add(k.id):t.set.delete(k.id);hit()}}),
+    h('span',{},'Kelas '+k.nama,lain?h('small',{},'Saat ini: '+o.peran+' (diganti ke '+pn+' jika dicentang)'):''))}),
+  info,
+  h('button',{class:'btn pr',onclick:()=>{
+   const cabut=[...awal].filter(x=>!t.set.has(x)).length;
+   if(!t.set.size&&!cabut)return toast('Belum ada kelas dipilih');
+   if(cabut&&!confirm('Cabut '+g.nama+' dari '+cabut+' kelas sebagai '+pn+'?'))return;
+   act(async()=>{await rpc('atur_kelas_guru',{p_user:g.user_id,p_peran:t.peran,p_kelas:[...t.set]},1);V.tg=null},'Kelas guru diperbarui')}},'Simpan'),
+  h('button',{class:'btn lt',onclick:()=>{V.tg=null;render()}},'Batal'))}
 function vAkun(){const s=G.gu.sekolah,adm=G.gu.peran==='admin';
  return h('div',{},h('div',{class:'card'},h('h2',{},G.gu.nama),h('p',{class:'sub'},s.nama+' · '+(RL[G.gu.peran]||'Guru')),
   h('button',{class:'btn lt',onclick:()=>aktifkanPush(1)},'🔔 Aktifkan pengingat di HP ini'),h('button',{class:'btn lt',onclick:()=>navigator.clipboard.writeText(location.origin+location.pathname+'?guru=1').then(()=>toast('Tautan masuk guru disalin'),()=>toast('Gagal menyalin'))},'🔗 Salin tautan masuk guru'),h('button',{class:'btn lt',onclick:bootG},'🔄 Muat ulang data'),h('button',{class:'btn dg',onclick:logout},'Keluar')),
   cardSandi(),
-  adm?cardStaf():'',
-  adm?h('div',{class:'card'},h('h2',{},'Hak akses guru'),h('p',{class:'sub'},'Hak guru ditentukan oleh link yang dipakainya: satu link per mapel/peran per kelas, sekali pakai. Kirim link di menu Kelas.'),
+  adm?cardStaf():'',adm&&V.tg?cardTugas():'',
+  adm?h('div',{class:'card'},h('h2',{},'Hak akses guru'),h('p',{class:'sub'},'Guru bisa bergabung lewat link per kelas (menu Kelas), atau Anda tugaskan langsung ke banyak kelas dengan tombol "Atur kelas" di bawah ini.'),
    G.dg.filter(x=>x.peran==='admin'||x.peran==='guru').length?G.dg.filter(x=>x.peran==='admin'||x.peran==='guru').map(x=>{const ad=x.peran==='admin';return h('div',{class:'row'},h('div',{},h('b',{},x.nama),h('small',{},ad?'Super admin · semua kelas':(x.kelas.length?x.kelas.map(c=>c.peran+' '+c.nama).join(', '):'Belum punya kelas'))),
      ad?h('span',{class:'badge'},'👑 Super admin'):h('span',{class:'badge'+(x.kelas.length?'':' no')},x.kelas.length?'✅ Berhak':'⚠️ Tanpa hak'),
-     ad?(x.user_id===uid()?'':h('button',{class:'btn lt',onclick:()=>{if(confirm('Cabut status super admin '+x.nama+'?'))act(()=>rpc('jadikan_admin',{p_user:x.user_id,p_admin:false},1),'Status admin dicabut')}},'Cabut admin')):h('button',{class:'btn lt',onclick:()=>{if(confirm('Jadikan '+x.nama+' super admin? Ia akan bisa mengelola semua kelas dan guru.'))act(()=>rpc('jadikan_admin',{p_user:x.user_id,p_admin:true},1),'Super admin ditambahkan')}},'Jadikan admin'))}):h('p',{class:'empty'},'Belum ada guru.')):'',adm?cardPeran():'')}
+     ad?(x.user_id===uid()?'':h('button',{class:'btn lt',onclick:()=>{if(confirm('Cabut status super admin '+x.nama+'?'))act(()=>rpc('jadikan_admin',{p_user:x.user_id,p_admin:false},1),'Status admin dicabut')}},'Cabut admin')):[h('button',{class:'btn lt',onclick:()=>bukaTugas(x)},'Atur kelas'),h('button',{class:'btn lt',onclick:()=>{if(confirm('Jadikan '+x.nama+' super admin? Ia akan bisa mengelola semua kelas dan guru.'))act(()=>rpc('jadikan_admin',{p_user:x.user_id,p_admin:true},1),'Super admin ditambahkan')}},'Jadikan admin')])}):h('p',{class:'empty'},'Belum ada guru.')):'',adm?cardPeran():'')}
 function keluar(){
  if(Q.length&&!confirm(Q.length+' jurnal belum terkirim dan akan hilang jika keluar. Tetap keluar?'))return;
  try{navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(x=>x&&x.unsubscribe()).catch(()=>{})}catch(e){}
  V.adm=0;V.f=null;V.lap=null;V.ns=null;V.nl=null;V.mj=null;ses=null;G=null;K=null;CK=null;Q=[];TK={};IB={};AK=[];LS('jah2a',null);
  ['jah2s','jah2k','jah2c','jah2r','jah2m','jah2q','jah2u','jah2kl','jah2t','jah2i'].forEach(k=>LS(k,null));
  Object.assign(MKS,{kid:null,tab:null,form:null,date:null,bulan:null,dr:null,pick:null});for(const k of Object.keys(MK))delete MK[k];
- Object.assign(V,{mode:'home',tab:'hari',kid:null,sel:null,draft:null,by:0,st:0,err:'',load:false,imp:null});
+ Object.assign(V,{mode:'home',tab:'hari',kid:null,sel:null,draft:null,by:0,st:0,err:'',load:false,imp:null,tg:null});
  render();scrollTo(0,0)}
 function logout(){keluar()}
 /* ===== Kelompok mengaji (Ummi): lintas kelas, guru mengaji berdiri sendiri ===== */
