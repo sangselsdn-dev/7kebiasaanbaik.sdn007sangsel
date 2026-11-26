@@ -70,6 +70,7 @@ header{background:radial-gradient(90% 160% at 100% 0,#e5384c 0,transparent 60%),
 #tabs button{position:relative}#tabs button.on::after{content:'';position:absolute;left:28%;right:28%;bottom:2px;height:3px;border-radius:3px;background:var(--br)}
 .mk .chip.sm{min-height:38px;padding:4px 12px;font-size:.88rem}
 .mkc small{display:block}
+.mkbar{position:sticky;bottom:var(--tb,64px);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px -16px -16px;padding:10px 16px;background:#fff;border-top:1px solid var(--ln);border-radius:0 0 16px 16px;box-shadow:0 -4px 12px rgba(0,0,0,.06);font-weight:700;color:var(--mu)}.mkbar.ubah{background:#fff6e9;color:#774514;border-top-color:var(--o)}.mkbar .btn{width:auto;margin:0;flex:0 0 auto;padding-left:22px;padding-right:22px}
 .mkc{border-top:1px solid var(--ln);padding:12px 0}.mkc:first-of-type{border-top:0}
 .mkp{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--ln)}.mkp small{display:block;color:var(--mu)}
 .mk input[type=checkbox]{width:22px;height:22px;min-height:0;margin:0;flex:none;accent-color:var(--br)}
@@ -174,10 +175,10 @@ async function loadG(){
  const d0=addDays(today(),-6),a={auth:1};
  if(ses&&ses.exp-Date.now()<60000)await api('/rest/v1/guru?select=nama&limit=1',a);
  const[kl,si,ju,ab,gu,mk,pr,km]=await Promise.all([api('/rest/v1/kelas?select=id,tingkat,nama,kode&order=tingkat,nama',a),api('/rest/v1/siswa?select=id,nama,wa_ortu,kelas_id,ibadah,agama,wajib_ganti&aktif=eq.true&order=nama',a),
-  ambilSemua('/rest/v1/jurnal?select=siswa_id,tanggal,h,diisi_oleh,rinci&order=tanggal,siswa_id&tanggal=gte.'+d0),ambilSemua('/rest/v1/absensi?select=siswa_id,tanggal,status&order=tanggal,siswa_id&tanggal=gte.'+d0),api('/rest/v1/guru?select=nama,peran,sekolah_id,sekolah:sekolah_id(nama,kode_guru)',a),api('/rest/v1/kelas_guru?select=kelas_id,peran:peran_id(nama,akses)',a),api('/rest/v1/peran_guru?select=id,nama,akses,tetap&order=urutan,nama',a),api('/rest/v1/kelompok?select=id,nama,jenis,aktif,kelompok_guru(user_id)&aktif=eq.true&order=nama',a).catch(()=>[])]);
+  ambilSemua('/rest/v1/jurnal?select=siswa_id,tanggal,h,diisi_oleh,rinci&order=tanggal,siswa_id&tanggal=gte.'+d0),ambilSemua('/rest/v1/absensi?select=siswa_id,tanggal,status&order=tanggal,siswa_id&tanggal=gte.'+d0),api('/rest/v1/guru?select=nama,peran,sekolah_id,sekolah:sekolah_id(nama,kode_guru)',a),api('/rest/v1/kelas_guru?select=kelas_id,peran:peran_id(nama,akses)',a),api('/rest/v1/peran_guru?select=id,nama,akses,tetap&order=urutan,nama',a),api('/rest/v1/kelompok?select=id,nama,jenis,aktif,kelompok_guru(user_id)&aktif=eq.true&order=nama',a).catch(()=>null)]);
  const j={},ab2={};ju.forEach(r=>j[r.tanggal+r.siswa_id]=r);ab.forEach(r=>ab2[r.tanggal+r.siswa_id]=r.status);
  G={kl,si,j,a:ab2,gu:gu[0]||null,dg:[],un:[],pr,mk:Object.fromEntries(mk.map(r=>[r.kelas_id,r.peran])),ar:await api('/rest/v1/siswa?select=id,nama,kelas_id&aktif=eq.false&order=nama',a)};
- {const stf=!!gu[0]&&['admin','kesiswaan','kepsek'].includes(gu[0].peran);G.kmp=(km||[]).filter(x=>stf||(x.kelompok_guru||[]).some(g=>g.user_id===uid()))}
+ {const stf=!!gu[0]&&['admin','kesiswaan','kepsek'].includes(gu[0].peran);G.kmp=(km||[]).filter(x=>stf||(x.kelompok_guru||[]).some(g=>g.user_id===uid()));G.kmpErr=km===null}
  G.pd={kelas:[],antrean:[],baru:[]};if(G.gu&&kl.some(k=>bisaKelola(k.id)))try{G.pd=await rpc('status_pendaftaran',{},1)}catch(e){}
  const iv=LS('jah2kl');
  if(G.gu&&iv){try{await rpc('gabung_kelas',{p_kode:iv,p_nama:G.gu.nama},1);LS('jah2kl',null);toast('Kelas ditambahkan ke akun Anda');return loadG()}catch(e){LS('jah2kl',null);toast(e.message)}}
@@ -563,7 +564,7 @@ function keluar(){
  if(Q.length&&!confirm(Q.length+' jurnal belum terkirim dan akan hilang jika keluar. Tetap keluar?'))return;
  try{navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(x=>x&&x.unsubscribe()).catch(()=>{})}catch(e){}
  V.adm=0;V.f=null;V.lap=null;V.ns=null;V.nl=null;V.mj=null;ses=null;G=null;K=null;CK=null;Q=[];TK={};IB={};AK=[];LS('jah2a',null);
- ['jah2s','jah2k','jah2c','jah2r','jah2m','jah2q','jah2u','jah2kl','jah2t','jah2i'].forEach(k=>LS(k,null));
+ ['jah2s','jah2k','jah2c','jah2r','jah2m','jah2q','jah2u','jah2kl','jah2t','jah2i','jah2md'].forEach(k=>LS(k,null));
  Object.assign(MKS,{kid:null,tab:null,form:null,date:null,bulan:null,dr:null,pick:null});for(const k of Object.keys(MK))delete MK[k];
  Object.assign(V,{mode:'home',tab:'hari',kid:null,sel:null,draft:null,by:0,st:0,err:'',load:false,imp:null,tg:null});
  render();scrollTo(0,0)}
@@ -574,7 +575,7 @@ const mkKelola=k=>G.gu.peran==='admin'||(k.kelompok_guru||[]).some(g=>g.user_id=
 function mkGet(key,fn){const c=MK[key];if(c!==undefined)return c;if(!MK['~'+key]){MK['~'+key]=1;fn().then(r=>{MK[key]={ok:r}},e=>{MK[key]={err:e instanceof TypeError?'Tidak ada koneksi internet':e.message}}).then(()=>{delete MK['~'+key];render()})}return undefined}
 function mkClr(kid){for(const k of Object.keys(MK))if(k.includes(kid))delete MK[k]}
 function mkView(key,fn,build){const r=mkGet(key,fn);if(!r)return h('p',{class:'empty'},'Memuat…');if(r.err)return h('div',{class:'card'},h('p',{class:'sub'},r.err),h('button',{class:'btn lt',onclick:()=>{delete MK[key];render()}},'Coba lagi'));return build(r.ok)}
-async function mkAct(fn,msg){try{await fn();if(msg)toast(msg)}catch(e){toast(e instanceof TypeError?'Tidak ada koneksi internet':e.message)}render()}
+async function mkAct(fn,msg,off){try{await fn();if(msg)toast(msg)}catch(e){toast(e instanceof TypeError?(off||'Tidak ada koneksi internet'):e.message)}render()}
 const mkSel=(map,val,ph,fn)=>h('select',{'aria-label':ph,onchange:e=>fn(e.target.value)},h('option',{value:''},ph),Object.entries(map).map(([v,t])=>h('option',{value:v,selected:v===val},t)));
 const mkProg=(tg,hl)=>tg?TNG[tg]+(hl!=null?' hal. '+hl:''):'belum ada catatan';
 
@@ -588,38 +589,52 @@ function vMengaji(){
 
 function mkDaftar(km,adm){
  return h('div',{},
+  G.kmpErr?h('div',{class:'msg'},'Daftar kelompok gagal dimuat (cek koneksi). Ini bukan berarti Anda belum ditugaskan. ',h('button',{class:'btn lt',onclick:()=>act(async()=>{})},'Coba lagi')):'',
   h('div',{class:'card'},h('h2',{class:'ttl'},ic('book',22),'Kelompok mengaji'),
    h('p',{class:'sub'},adm?'Kelompok Ummi lintas kelas. Atur guru pengampu dan anggotanya di sini.':'Kelompok yang Anda ampu atau pantau.'),
    adm?h('button',{class:'btn pr',onclick:()=>{MKS.form='baru';render();scrollTo(0,0)}},'+ Kelompok baru'):''),
   km.length?h('div',{class:'card'},km.map(x=>h('div',{class:'row'},h('div',{},h('b',{},x.nama),h('small',{},(x.kelompok_guru||[]).length+' guru pengampu')),
     h('button',{class:'btn lt',onclick:()=>{MKS.kid=x.id;MKS.tab=mkKelola(x)?'catat':'anggota';MKS.date=today();MKS.dr=null;MKS.pick=null;render();scrollTo(0,0)}},'Buka')))):
-   h('div',{class:'card'},h('p',{class:'empty'},adm?'Belum ada kelompok. Ketuk "+ Kelompok baru".':'Belum ada kelompok untuk Anda. Hubungi super admin.')))}
+   G.kmpErr?'':h('div',{class:'card'},h('p',{class:'empty'},adm?'Belum ada kelompok. Ketuk "+ Kelompok baru".':'Belum ada kelompok untuk Anda. Hubungi super admin.')))}
 
 function mkDetail(k,adm){
  const kel=mkKelola(k),tabs=[...(kel?[['catat','Catat']]:[]),['anggota','Anggota'],['rekap','Rekap'],...(adm?[['atur','Atur']]:[])];
  if(!tabs.some(t=>t[0]===MKS.tab))MKS.tab=tabs[0][0];
  return h('div',{},
-  h('button',{class:'btn lt',onclick:()=>{MKS.kid=null;MKS.dr=null;MKS.pick=null;render();scrollTo(0,0)}},'← Semua kelompok'),
+  h('button',{class:'btn lt',onclick:()=>{if(mkBlok())return;MKS.kid=null;MKS.dr=null;MKS.pick=null;render();scrollTo(0,0)}},'← Semua kelompok'),
   h('div',{class:'card'},h('h2',{class:'ttl'},ic('book',22),k.nama),h('p',{class:'sub'},(k.kelompok_guru||[]).length+' guru pengampu'+(kel?'':' · hanya melihat'))),
   h('div',{class:'seg',style:'grid-template-columns:repeat('+tabs.length+',1fr)'},tabs.map(([t,l])=>h('button',{class:MKS.tab===t?'on':'',onclick:()=>{MKS.tab=t;MKS.pick=null;render();scrollTo(0,0)}},l))),
   MKS.tab==='catat'?mkCatat(k):MKS.tab==='anggota'?mkAnggota(k,kel):MKS.tab==='rekap'?mkRekap(k):mkFormCard(k))}
 
 async function mkPert(kid,d){
  const p=await api('/rest/v1/kelompok_pertemuan?select=id,catatan&kelompok_id=eq.'+kid+'&tanggal=eq.'+d,{auth:1});
- if(!p.length)return{catatan:'',rows:{}};
+ if(!p.length)return{catatan:'',rows:{},ada:false};
  const c=await api('/rest/v1/kelompok_catatan?select=siswa_id,status,tingkat,halaman,kelancaran,catatan,naik_tingkat&pertemuan_id=eq.'+p[0].id,{auth:1});
- return{catatan:p[0].catatan||'',rows:Object.fromEntries(c.map(r=>[r.siswa_id,r]))}}
+ return{catatan:p[0].catatan||'',rows:Object.fromEntries(c.map(r=>[r.siswa_id,r])),ada:true}}
 
 function mkCatat(k){
  const d=MKS.date||today(),
- dt=h('input',{type:'date',value:d,max:today(),min:addDays(today(),-30),'aria-label':'Tanggal pertemuan',onchange:e=>{if(e.target.value){MKS.date=e.target.value;MKS.dr=null;render()}}});
+ dt=h('input',{type:'date',value:d,max:today(),min:addDays(today(),-30),'aria-label':'Tanggal pertemuan',onchange:e=>{if(!e.target.value)return;if(mkBlok()){e.target.value=d;return}MKS.date=e.target.value;MKS.dr=null;render()}});
  return h('div',{},h('div',{class:'card'},h('label',{class:'lb'},'Tanggal pertemuan'),dt,h('p',{class:'hint'},'Bisa mengisi sampai 30 hari ke belakang. Mengisi tanggal yang sama lagi akan memperbarui catatan.')),
   mkView('a:'+k.id,()=>rpc('kelompok_anggota',{p_kelompok:k.id},1),ang=>mkView('p:'+k.id+':'+d,()=>mkPert(k.id,d),pt=>mkCatatForm(k,d,ang,pt))))}
+
+/* Draf catatan Ummi: dihitung 'belum disimpan' bila beda dengan data server; disalin ke HP agar tidak hilang saat refresh/offline */
+const mkDirty=()=>{const d=MKS.dr;return !!d&&JSON.stringify([d.cat,d.r])!==d.base},
+mkBlok=()=>V.tab==='mengaji'&&mkDirty()&&!confirm('Catatan Ummi BELUM disimpan ke server. Tetap pindah? (Draf tetap ada di HP ini, tetapi belum tercatat.)'),
+mkTxt=()=>{const d=MKS.dr;return mkDirty()?'● Belum disimpan':(d&&d.ada?'✓ Sudah tersimpan':'Belum ada catatan tanggal ini')},
+mkDraf=()=>{const d=MKS.dr;if(!d)return;const m=LS('jah2md')||{};if(mkDirty())m[d.key]={u:uid(),t:Date.now(),cat:d.cat,r:d.r};else delete m[d.key];const w=Date.now()-6048e5;for(const x of Object.keys(m))if(!m[x]||m[x].t<w)delete m[x];LS('jah2md',Object.keys(m).length?m:null)},
+mkUpd=()=>{const b=document.getElementById('mkbar');if(!MKS.dr||!b)return;b.className='mkbar'+(mkDirty()?' ubah':'');b.firstChild.textContent=mkTxt();mkDraf()};
+addEventListener('beforeunload',e=>{if(mkDirty()){e.preventDefault();e.returnValue=''}});
 
 function mkCatatForm(k,d,ang,pt){
  if(!ang.length)return h('div',{class:'card'},h('p',{class:'empty'},'Belum ada anggota. Buka tab Anggota untuk menambahkan siswa.'));
  const key=k.id+':'+d;
- if(!MKS.dr||MKS.dr.key!==key)MKS.dr={key,cat:pt.catatan,r:Object.fromEntries(ang.map(a=>{const x=pt.rows[a.siswa_id]||{};return[a.siswa_id,{st:x.status||'hadir',tg:x.tingkat||'',hl:x.halaman==null?'':String(x.halaman),kl:x.kelancaran||'',ct:x.catatan||'',nk:!!x.naik_tingkat}]}))};
+ if(!MKS.dr||MKS.dr.key!==key){
+  const r=Object.fromEntries(ang.map(a=>{const x=pt.rows[a.siswa_id]||{};return[a.siswa_id,{st:x.status||'hadir',tg:x.tingkat||'',hl:x.halaman==null?'':String(x.halaman),kl:x.kelancaran||'',ct:x.catatan||'',nk:!!x.naik_tingkat}]})),
+  dr0={key,cat:pt.catatan,r,ada:!!pt.ada};dr0.base=JSON.stringify([dr0.cat,dr0.r]);
+  const sv=(LS('jah2md')||{})[key];
+  if(sv&&sv.u===uid()&&sv.r){dr0.cat=sv.cat;for(const id of Object.keys(dr0.r))if(sv.r[id])dr0.r[id]=sv.r[id];dr0.pulih=JSON.stringify([dr0.cat,dr0.r])!==dr0.base}
+  MKS.dr=dr0}
  const dr=MKS.dr,
  blok=a=>{const r=dr.r[a.siswa_id],hd=r.st==='hadir',tl=a.tanggal_terakhir?' ('+a.tanggal_terakhir.slice(8,10)+'/'+a.tanggal_terakhir.slice(5,7)+')':'';
   return h('div',{class:'mkc'},
@@ -629,16 +644,22 @@ function mkCatatForm(k,d,ang,pt){
     h('div',{class:'two'},mkSel(TNG,r.tg,'Tingkat',v=>{r.tg=v}),h('input',{type:'number',inputmode:'numeric',min:0,max:999,placeholder:'Halaman','aria-label':'Halaman',value:r.hl,oninput:e=>{r.hl=e.target.value}})),
     h('div',{class:'two'},mkSel(KLC,r.kl,'Kelancaran',v=>{r.kl=v}),h('label',{class:'mkn'},h('input',{type:'checkbox',checked:r.nk,onchange:e=>{r.nk=e.target.checked}}),'Naik tingkat')),
     h('input',{placeholder:'Catatan (opsional)',maxlength:300,'aria-label':'Catatan siswa',value:r.ct,oninput:e=>{r.ct=e.target.value}})):'')},
- simpan=()=>mkAct(async()=>{
+ simpan=()=>{
+  if(!dr.ada&&ang.every(a=>dr.r[a.siswa_id].st==='hadir')&&!confirm('Belum ada catatan untuk tanggal ini. Semua '+ang.length+' anggota akan disimpan sebagai HADIR. Sudah benar?'))return;
+  mkAct(async()=>{
   const baris=ang.map(a=>{const r=dr.r[a.siswa_id],hd=r.st==='hadir';return{siswa_id:a.siswa_id,status:r.st,tingkat:hd&&r.tg?r.tg:null,halaman:hd&&r.hl!==''?Number(r.hl):null,kelancaran:hd&&r.kl?r.kl:null,catatan:hd?r.ct.trim():'',naik_tingkat:hd&&r.nk}});
   if(baris.some(b=>b.halaman!=null&&!(Number.isInteger(b.halaman)&&b.halaman>=0&&b.halaman<=999)))throw new Error('Halaman harus angka bulat 0–999');
   await rpc('simpan_pertemuan',{p_kelompok:k.id,p_tanggal:d,p_catatan:dr.cat.trim(),p_baris:baris},1);
-  mkClr(k.id);MKS.dr=null},'Catatan pertemuan tersimpan'),
+  const m=LS('jah2md')||{};delete m[key];LS('jah2md',Object.keys(m).length?m:null);
+  mkClr(k.id);MKS.dr=null},'✓ Catatan pertemuan tersimpan','Belum tersimpan: tidak ada koneksi. Draf aman di HP ini, tekan Simpan lagi saat sinyal ada.')},
  n=ang.length,hadir=ang.filter(a=>dr.r[a.siswa_id].st==='hadir').length;
- return h('div',{},
-  h('div',{class:'card'},h('h2',{},fmt(MKS.date||today())),h('p',{class:'sub'},hadir+' hadir dari '+n+' anggota'),ang.map(blok),
+ mkDraf();
+ return h('div',{oninput:mkUpd,onchange:mkUpd},
+  dr.pulih&&mkDirty()?h('div',{class:'msg'},'Draf yang belum tersimpan dipulihkan dari HP ini. Periksa, lalu tekan Simpan.'):'',
+  h('div',{class:'card'},h('h2',{},fmt(MKS.date||today())),h('p',{class:'sub'},hadir+' hadir dari '+n+' anggota'),
+   h('p',{class:'hint'},'Mengubah status belum otomatis tersimpan. Tekan tombol Simpan di bawah layar setelah selesai.'),ang.map(blok),
    h('label',{class:'lb'},'Catatan pertemuan'),h('textarea',{rows:2,maxlength:500,placeholder:'Catatan pertemuan (opsional)','aria-label':'Catatan pertemuan',value:dr.cat,oninput:e=>{dr.cat=e.target.value}}),
-   h('button',{class:'btn pr',onclick:simpan},'Simpan catatan pertemuan')))}
+   h('div',{id:'mkbar',class:'mkbar'+(mkDirty()?' ubah':'')},h('span',{},mkTxt()),h('button',{class:'btn pr',onclick:simpan},'Simpan'))))}
 
 function mkAnggota(k,kel){
  return mkView('a:'+k.id,()=>rpc('kelompok_anggota',{p_kelompok:k.id},1),ang=>h('div',{},
@@ -660,8 +681,8 @@ function mkPicker(k,ang){
   return h('div',{class:'card'},h('h2',{},'Pilih anggota'),
    h('input',{placeholder:'Cari nama siswa','aria-label':'Cari nama siswa',value:P.q,oninput:e=>{P.q=e.target.value;gambar()}}),
    h('select',{'aria-label':'Filter kelas',onchange:e=>{P.kl=e.target.value;gambar()}},h('option',{value:''},'Semua kelas'),kls.map(x=>h('option',{value:x,selected:x===P.kl},'Kelas '+x))),
-   h('button',{class:'btn lt',onclick:()=>{cocok().forEach(c=>P.set.add(c.siswa_id));gambar()}},'Pilih semua yang tampil'),
-   h('button',{class:'btn lt',onclick:()=>{cocok().forEach(c=>P.set.delete(c.siswa_id));gambar()}},'Kosongkan yang tampil'),
+   h('button',{class:'btn lt',onclick:()=>{cocok().slice(0,80).forEach(c=>P.set.add(c.siswa_id));gambar()}},'Pilih semua yang tampil'),
+   h('button',{class:'btn lt',onclick:()=>{cocok().slice(0,80).forEach(c=>P.set.delete(c.siswa_id));gambar()}},'Kosongkan yang tampil'),
    info,box,sv)})}
 
 function mkRekap(k){
@@ -684,7 +705,7 @@ function mkFormCard(k){
 
 const T=[['hari','home','Hari ini'],['rekap','chart','Rekap'],['kelas','users','Kelas'],['mengajar','pen','Mengajar'],['kesiswaan','shield','Kesiswaan'],['mengaji','book','Mengaji'],['akun','user','Akun']],GV={hari:vGHari,rekap:vGRekap,kelas:vGKelas,mengajar:vGMengajar,kesiswaan:vKesiswaan,mengaji:vMengaji,akun:vAkun},
 STF=['admin','kesiswaan','kepsek'],RL={admin:'Super Admin',guru:'Guru',kesiswaan:'Kesiswaan',kepsek:'Kepala Sekolah',mengaji:'Guru Mengaji'},
-TL=()=>T.filter(([k])=>G.gu.peran==='mengaji'?(k==='mengaji'||k==='akun'):k==='mengaji'?(['admin','kesiswaan','kepsek'].includes(G.gu.peran)||(G.kmp||[]).length>0):k==='kesiswaan'?(STF.includes(G.gu.peran)||Object.values(G.mk||{}).some(m=>m.akses==='kelola')):k==='mengajar'?!['kesiswaan','kepsek'].includes(G.gu.peran):true);
+TL=()=>T.filter(([k])=>G.gu.peran==='mengaji'?(k==='mengaji'||k==='akun'):k==='mengaji'?(['admin','kesiswaan','kepsek'].includes(G.gu.peran)||(G.kmp||[]).length>0||G.kmpErr):k==='kesiswaan'?(STF.includes(G.gu.peran)||Object.values(G.mk||{}).some(m=>m.akses==='kelola')):k==='mengajar'?!['kesiswaan','kepsek'].includes(G.gu.peran):true);
 function vGuru(){
  if(!ses)return vLogin();
  if(V.load)return h('p',{class:'empty'},'Memuat data…');
@@ -696,7 +717,7 @@ function render(){const y=scrollY;let v;
  try{v=V.mode==='home'?vHome():V.mode==='daftar'?vDaftar():V.mode==='anak'?vAnak():vGuru()}catch(e){v=h('div',{class:'msg'},'Terjadi kesalahan: '+e.message)}
  $('#app').replaceChildren(banner(),v);
  const n=$('#tabs'),on=V.mode==='guru'&&G&&G.gu;
- const tl=on?TL():[];n.className='t'+tl.length;n.replaceChildren(...(tl.map(([k,i,t])=>h('button',{class:V.tab===k?'on':'','aria-current':V.tab===k?'page':false,onclick:()=>{V.tab=k;V.sel=null;V.draft=null;render();scrollTo(0,0)}},h('span',{},ic(i,24)),t))));n.hidden=!on;scrollTo(0,y)}
+ const tl=on?TL():[];n.className='t'+tl.length;n.replaceChildren(...(tl.map(([k,i,t])=>h('button',{class:V.tab===k?'on':'','aria-current':V.tab===k?'page':false,onclick:()=>{if(k!=='mengaji'&&V.tab==='mengaji'&&mkBlok())return;V.tab=k;V.sel=null;V.draft=null;render();scrollTo(0,0)}},h('span',{},ic(i,24)),t))));n.hidden=!on;document.documentElement.style.setProperty('--tb',(on?n.offsetHeight:0)+'px');scrollTo(0,y)}
 addEventListener('online',flush);
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 (()=>{let n=0,t;const im=document.querySelector('header img');im.addEventListener('click',()=>{clearTimeout(t);if(++n>=5){n=0;V.adm=1;setMode('guru')}else t=setTimeout(()=>{n=0},2500)})})();
